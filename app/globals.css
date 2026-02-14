@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    /* Cream/warm white - inspired by folk art card backgrounds */
+    --background: 42 56% 96%;
+    --foreground: 213 45% 20%;
+
+    /* Card: warm cream */
+    --card: 42 60% 97%;
+    --card-foreground: 213 45% 20%;
+
+    --popover: 42 60% 97%;
+    --popover-foreground: 213 45% 20%;
+
+    /* Primary: deep navy/indigo */
+    --primary: 213 55% 22%;
+    --primary-foreground: 42 56% 96%;
+
+    /* Secondary: soft blue tint */
+    --secondary: 213 30% 90%;
+    --secondary-foreground: 213 45% 20%;
+
+    /* Muted: warm neutral */
+    --muted: 38 25% 91%;
+    --muted-foreground: 213 20% 46%;
+
+    /* Accent: golden amber */
+    --accent: 43 85% 52%;
+    --accent-foreground: 213 45% 15%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 42 56% 96%;
+
+    --border: 38 30% 84%;
+    --input: 38 30% 84%;
+    --ring: 213 55% 22%;
+
+    /* Charts: warm palette */
+    --chart-1: 213 55% 35%;
+    --chart-2: 43 85% 52%;
+    --chart-3: 160 40% 45%;
+    --chart-4: 25 80% 55%;
+    --chart-5: 340 50% 55%;
+
+    --radius: 0.625rem;
+
+    --sidebar-background: 42 56% 96%;
+    --sidebar-foreground: 213 45% 20%;
+    --sidebar-primary: 213 55% 22%;
+    --sidebar-primary-foreground: 42 56% 96%;
+    --sidebar-accent: 38 25% 91%;
+    --sidebar-accent-foreground: 213 45% 20%;
+    --sidebar-border: 38 30% 84%;
+    --sidebar-ring: 213 55% 22%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
