@@ -88,7 +88,7 @@ export function calcularHipoteca(inputs: MortgageInputs): MortgageResults {
   const taeObra = costoObra > 0 ? calcularTAE(tasaObra) : 0
 
   // Inversion
-  const montoInvertido = costoObra * (1 - porcentajeFinanciadoObra / 100)
+  const montoInvertido = costoObra * (porcentajeFinanciadoObra / 100)
   const rNeto = (tasaInversion / 100) * (1 - tasaImpuesto / 100)
   const plazoAnios = aniosObra
 
