@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import CalculatorForm from "@/components/calculator-form"
 import ResultsSummary from "@/components/results-summary"
 import AmortizationChart from "@/components/amortization-chart"
+import InvestmentChart from "@/components/investment-chart"
 import AmortizationTable from "@/components/amortization-table"
 import DecorativeBorder from "@/components/decorative-border"
 import { calcularHipoteca } from "@/lib/mortgage-calc"
@@ -132,6 +133,14 @@ export default function Page() {
                       <AmortizationChart
                         tabla={results.tablaObra}
                         title="Prestamo obra"
+                      />
+                    )}
+                    {results.montoInvertido > 0 && (
+                      <InvestmentChart
+                        montoInvertido={results.montoInvertido}
+                        tasaNetaInversion={results.tasaNetaInversion}
+                        plazoAnios={inputs.aniosObra}
+                        cuotaAnualObra={results.cuotaMensualObra * 12}
                       />
                     )}
                   </TabsContent>

@@ -54,6 +54,8 @@ export function calcularHipoteca(inputs: MortgageInputs): MortgageResults {
     tasaObra,
     aniosObra,
     costosAdicionales,
+    tasaInversion,
+    tasaImpuesto,
   } = inputs
 
   // Hipoteca principal
@@ -85,6 +87,22 @@ export function calcularHipoteca(inputs: MortgageInputs): MortgageResults {
   const taeHipoteca = calcularTAE(tasaHipoteca)
   const taeObra = costoObra > 0 ? calcularTAE(tasaObra) : 0
 
+  // Inversion
+  const montoInvertido = costoObra * (1 - porcentajeFinanciadoObra / 100)
+  const rNeto = (tasaInversion / 100) * (1 - tasaImpuesto / 100)
+  const plazoAnios = aniosObra
+
+  let valorFuturoInversion = 0
+  let vpnEstrategia = 0
+
+  if (montoInvertido > 0 && rNeto > 0 && plazoAnios > 0) {
+    valorFuturoInversion = montoInvertido * Math.pow(1 + rNeto, plazoAnios)
+
+    // CuotaAnual del prestamo de obra = cuotaMensualObra * 12
+    const cuotaAnualObra = cuotaMensualObra * 12
+    vpnEstrategia = montoInvertido - cuotaAnualObra * ((1 - Math.pow(1 + rNeto, -plazoAnios)) / rNeto)
+  }
+
   // Tablas
   const tablaHipoteca = calcularTablaAmortizacion(capitalHipoteca, tasaHipoteca, aniosHipoteca)
   const tablaObra = calcularTablaAmortizacion(capitalObra, tasaObra, aniosObra)
@@ -105,6 +123,10 @@ export function calcularHipoteca(inputs: MortgageInputs): MortgageResults {
     comision,
     gastos,
     inversionInicial,
+    montoInvertido,
+    tasaNetaInversion: rNeto * 100,
+    valorFuturoInversion,
+    vpnEstrategia,
     taeHipoteca,
     taeObra,
     tablaHipoteca,

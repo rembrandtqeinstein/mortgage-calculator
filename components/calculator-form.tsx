@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import type { MortgageInputs } from "@/lib/mortgage-types"
-import { Home, Landmark, Hammer } from "lucide-react"
+import { Home, Landmark, Hammer, TrendingUp } from "lucide-react"
 
 interface CalculatorFormProps {
   inputs: MortgageInputs
@@ -323,6 +323,37 @@ export default function CalculatorForm({ inputs, onChange }: CalculatorFormProps
             value={inputs.aniosObra}
             onChange={(v) => update("aniosObra", v)}
             suffix="anos"
+          />
+        </div>
+      </section>
+
+      <Separator className="bg-border" />
+
+      {/* Inversion */}
+      <section>
+        <div className="flex items-center gap-2.5 mb-5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-chart-4">
+            <TrendingUp className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <h3 className="font-serif text-lg text-foreground">Inversion (opcional)</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Analiza el costo de oportunidad de invertir el monto no financiado de la obra
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <InputField
+            id="tasaInversion"
+            label="Tasa de inversion anual"
+            value={inputs.tasaInversion}
+            onChange={(v) => update("tasaInversion", v)}
+            suffix="%"
+          />
+          <InputField
+            id="tasaImpuesto"
+            label="Tasa de impuesto"
+            value={inputs.tasaImpuesto}
+            onChange={(v) => update("tasaImpuesto", v)}
+            suffix="%"
           />
         </div>
       </section>

@@ -12,6 +12,9 @@ export interface MortgageInputs {
   tasaObra: number
   aniosObra: number
   costosAdicionales: number
+  // Inversion
+  tasaInversion: number
+  tasaImpuesto: number
 }
 
 export interface AmortizacionRow {
@@ -52,6 +55,12 @@ export interface MortgageResults {
   taeHipoteca: number
   taeObra: number
 
+  // Inversion
+  montoInvertido: number
+  tasaNetaInversion: number
+  valorFuturoInversion: number
+  vpnEstrategia: number
+
   // Tablas amortizacion
   tablaHipoteca: AmortizacionRow[]
   tablaObra: AmortizacionRow[]
@@ -71,4 +80,6 @@ export const DEFAULT_INPUTS: MortgageInputs = {
   tasaObra: 4,
   aniosObra: 10,
   costosAdicionales: 150,
+  tasaInversion: 7,
+  tasaImpuesto: 19,
 }
