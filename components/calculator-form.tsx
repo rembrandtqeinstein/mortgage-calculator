@@ -53,6 +53,34 @@ export default function CalculatorForm({ inputs, onChange }: CalculatorFormProps
     onChange({ ...inputs, [field]: value })
   }
 
+  // Bidirectional calculation handlers
+  const updateComisionAgencia = (percentage: number) => {
+    const costoAgencia = inputs.precioInmueble * (percentage / 100)
+    onChange({ ...inputs, comisionAgencia: percentage, costoAgencia })
+  }
+
+  const updateCostoAgencia = (cost: number) => {
+    const comisionAgencia = inputs.precioInmueble > 0 ? (cost / inputs.precioInmueble) * 100 : 0
+    onChange({ ...inputs, costoAgencia: cost, comisionAgencia })
+  }
+
+  const updateGastosEscritura = (percentage: number) => {
+    const costosCompra = inputs.precioInmueble * (percentage / 100)
+    onChange({ ...inputs, gastosEscritura: percentage, costosCompra })
+  }
+
+  const updateCostosCompra = (cost: number) => {
+    const gastosEscritura = inputs.precioInmueble > 0 ? (cost / inputs.precioInmueble) * 100 : 0
+    onChange({ ...inputs, costosCompra: cost, gastosEscritura })
+  }
+
+  // Update absolute values when precio inmueble changes
+  const updatePrecioInmueble = (precio: number) => {
+    const costoAgencia = precio * (inputs.comisionAgencia / 100)
+    const costosCompra = precio * (inputs.gastosEscritura / 100)
+    onChange({ ...inputs, precioInmueble: precio, costoAgencia, costosCompra })
+  }
+
   return (
     <div className="flex flex-col gap-8">
       {/* Inmueble */}
@@ -69,7 +97,7 @@ export default function CalculatorForm({ inputs, onChange }: CalculatorFormProps
               id="precio"
               label="Precio del inmueble"
               value={inputs.precioInmueble}
-              onChange={(v) => update("precioInmueble", v)}
+              onChange={updatePrecioInmueble}
               suffix="EUR"
             />
           </div>
@@ -84,15 +112,29 @@ export default function CalculatorForm({ inputs, onChange }: CalculatorFormProps
             id="comision"
             label="Comision agencia"
             value={inputs.comisionAgencia}
-            onChange={(v) => update("comisionAgencia", v)}
+            onChange={updateComisionAgencia}
             suffix="%"
+          />
+          <InputField
+            id="costoAgencia"
+            label="Costo de Agencia"
+            value={inputs.costoAgencia}
+            onChange={updateCostoAgencia}
+            suffix="EUR"
           />
           <InputField
             id="escritura"
             label="Gastos escritura"
             value={inputs.gastosEscritura}
-            onChange={(v) => update("gastosEscritura", v)}
+            onChange={updateGastosEscritura}
             suffix="%"
+          />
+          <InputField
+            id="costosCompra"
+            label="Costos de compra"
+            value={inputs.costosCompra}
+            onChange={updateCostosCompra}
+            suffix="EUR"
           />
           <InputField
             id="adicionales"

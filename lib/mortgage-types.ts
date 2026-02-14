@@ -4,7 +4,9 @@ export interface MortgageInputs {
   aniosHipoteca: number
   tasaHipoteca: number
   comisionAgencia: number
+  costoAgencia: number
   gastosEscritura: number
+  costosCompra: number
   costoObra: number
   porcentajeFinanciadoObra: number
   tasaObra: number
@@ -61,7 +63,9 @@ export const DEFAULT_INPUTS: MortgageInputs = {
   aniosHipoteca: 30,
   tasaHipoteca: 2.5,
   comisionAgencia: 3,
+  costoAgencia: 9000, // 3% of 300000
   gastosEscritura: 2,
+  costosCompra: 6000, // 2% of 300000
   costoObra: 0,
   porcentajeFinanciadoObra: 100,
   tasaObra: 4,
