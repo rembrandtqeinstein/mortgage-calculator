@@ -60,14 +60,36 @@ function InputField({
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(false)
-    const numValue = parseFloat(e.target.value.replace(/\./g, "").replace(",", ".")) || 0
-    onChange(numValue)
+
+    // Clean the input: remove thousand separators (.) and replace decimal comma with dot
+    let cleanValue = e.target.value.trim()
+
+    // Remove all dots (thousand separators)
+    cleanValue = cleanValue.replace(/\./g, "")
+
+    // Replace comma with dot for decimal separator
+    cleanValue = cleanValue.replace(",", ".")
+
+    // Remove any spaces
+    cleanValue = cleanValue.replace(/\s/g, "")
+
+    // Parse as float, default to 0 if invalid
+    const numValue = parseFloat(cleanValue) || 0
+
+    // Only trigger onChange if the value actually changed
+    if (Math.abs(numValue - value) > 0.001) {
+      onChange(numValue)
+    }
+
     setDisplayValue(formatDisplayValue(numValue))
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
-    setDisplayValue(newValue)
+    // Only allow numbers, dots, commas, and spaces while typing
+    if (newValue === "" || /^[\d.,\s]*$/.test(newValue)) {
+      setDisplayValue(newValue)
+    }
   }
 
   return (
@@ -100,32 +122,41 @@ export default function CalculatorForm({ inputs, onChange }: CalculatorFormProps
     onChange({ ...inputs, [field]: value })
   }
 
+  // Helper to round to 3 decimal places to avoid floating point issues
+  const round3 = (num: number) => Math.round(num * 1000) / 1000
+
   // Bidirectional calculation handlers
   const updateComisionAgencia = (percentage: number) => {
-    const costoAgencia = inputs.precioInmueble * (percentage / 100)
-    onChange({ ...inputs, comisionAgencia: percentage, costoAgencia })
+    const costoAgencia = Math.round(inputs.precioInmueble * (percentage / 100))
+    onChange({ ...inputs, comisionAgencia: round3(percentage), costoAgencia })
   }
 
   const updateCostoAgencia = (cost: number) => {
-    const comisionAgencia = inputs.precioInmueble > 0 ? (cost / inputs.precioInmueble) * 100 : 0
-    onChange({ ...inputs, costoAgencia: cost, comisionAgencia })
+    // Safeguard: only calculate percentage if precio inmueble is reasonable
+    const comisionAgencia = inputs.precioInmueble > 100
+      ? round3((cost / inputs.precioInmueble) * 100)
+      : 0
+    onChange({ ...inputs, costoAgencia: Math.round(cost), comisionAgencia })
   }
 
   const updateGastosEscritura = (percentage: number) => {
-    const costosCompra = inputs.precioInmueble * (percentage / 100)
-    onChange({ ...inputs, gastosEscritura: percentage, costosCompra })
+    const costosCompra = Math.round(inputs.precioInmueble * (percentage / 100))
+    onChange({ ...inputs, gastosEscritura: round3(percentage), costosCompra })
   }
 
   const updateCostosCompra = (cost: number) => {
-    const gastosEscritura = inputs.precioInmueble > 0 ? (cost / inputs.precioInmueble) * 100 : 0
-    onChange({ ...inputs, costosCompra: cost, gastosEscritura })
+    // Safeguard: only calculate percentage if precio inmueble is reasonable
+    const gastosEscritura = inputs.precioInmueble > 100
+      ? round3((cost / inputs.precioInmueble) * 100)
+      : 0
+    onChange({ ...inputs, costosCompra: Math.round(cost), gastosEscritura })
   }
 
   // Update absolute values when precio inmueble changes
   const updatePrecioInmueble = (precio: number) => {
-    const costoAgencia = precio * (inputs.comisionAgencia / 100)
-    const costosCompra = precio * (inputs.gastosEscritura / 100)
-    onChange({ ...inputs, precioInmueble: precio, costoAgencia, costosCompra })
+    const costoAgencia = Math.round(precio * (inputs.comisionAgencia / 100))
+    const costosCompra = Math.round(precio * (inputs.gastosEscritura / 100))
+    onChange({ ...inputs, precioInmueble: Math.round(precio), costoAgencia, costosCompra })
   }
 
   return (
