@@ -77,7 +77,7 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
           <Separator className="bg-border" />
           <DetailRow label="Comision agencia" value={formatCurrency(results.comision)} />
           <Separator className="bg-border" />
-          <DetailRow label="Gastos escritura" value={formatCurrency(results.gastos)} />
+          <DetailRow label="Costos de Compra" value={formatCurrency(results.gastos)} />
           {results.capitalObra > 0 && (
             <>
               <Separator className="bg-border" />

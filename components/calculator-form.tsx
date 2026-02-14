@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -24,6 +25,51 @@ function InputField({
   suffix?: string
   id: string
 }) {
+  const formatDisplayValue = (val: number): string => {
+    if (!val && val !== 0) return ""
+
+    // For percentages, show up to 3 decimal places
+    if (suffix === "%") {
+      return val.toLocaleString("es-ES", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 3,
+      })
+    }
+
+    // For currency/numbers, show with thousand separators
+    return val.toLocaleString("es-ES", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })
+  }
+
+  const [displayValue, setDisplayValue] = React.useState(formatDisplayValue(value))
+  const [isFocused, setIsFocused] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!isFocused) {
+      setDisplayValue(formatDisplayValue(value))
+    }
+  }, [value, isFocused])
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(true)
+    // Show raw number when focused for easier editing
+    setDisplayValue(value ? value.toString() : "")
+  }
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    setIsFocused(false)
+    const numValue = parseFloat(e.target.value.replace(/\./g, "").replace(",", ".")) || 0
+    onChange(numValue)
+    setDisplayValue(formatDisplayValue(numValue))
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value
+    setDisplayValue(newValue)
+  }
+
   return (
     <div className="flex flex-col gap-1.5">
       <Label htmlFor={id} className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -32,10 +78,11 @@ function InputField({
       <div className="relative">
         <Input
           id={id}
-          type="number"
-          step="any"
-          value={value || ""}
-          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+          type="text"
+          value={displayValue}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           className="bg-background border-border pr-12 h-11 text-foreground font-medium tabular-nums focus-visible:ring-accent"
         />
         {suffix && (
@@ -109,39 +156,39 @@ export default function CalculatorForm({ inputs, onChange }: CalculatorFormProps
             suffix="%"
           />
           <InputField
-            id="comision"
-            label="Comision agencia"
-            value={inputs.comisionAgencia}
-            onChange={updateComisionAgencia}
-            suffix="%"
-          />
-          <InputField
-            id="costoAgencia"
-            label="Costo de Agencia"
-            value={inputs.costoAgencia}
-            onChange={updateCostoAgencia}
-            suffix="EUR"
-          />
-          <InputField
-            id="escritura"
-            label="Gastos escritura"
-            value={inputs.gastosEscritura}
-            onChange={updateGastosEscritura}
-            suffix="%"
-          />
-          <InputField
-            id="costosCompra"
-            label="Costos de compra"
-            value={inputs.costosCompra}
-            onChange={updateCostosCompra}
-            suffix="EUR"
-          />
-          <InputField
             id="adicionales"
             label="Costos adicionales / mes"
             value={inputs.costosAdicionales}
             onChange={(v) => update("costosAdicionales", v)}
             suffix="EUR"
+          />
+          <InputField
+            id="costoAgencia"
+            label="Costo Agencia"
+            value={inputs.costoAgencia}
+            onChange={updateCostoAgencia}
+            suffix="EUR"
+          />
+          <InputField
+            id="comision"
+            label="Comision Agencia"
+            value={inputs.comisionAgencia}
+            onChange={updateComisionAgencia}
+            suffix="%"
+          />
+          <InputField
+            id="costosCompra"
+            label="Costos de Compra ($)"
+            value={inputs.costosCompra}
+            onChange={updateCostosCompra}
+            suffix="EUR"
+          />
+          <InputField
+            id="escritura"
+            label="Costos de Compra (%)"
+            value={inputs.gastosEscritura}
+            onChange={updateGastosEscritura}
+            suffix="%"
           />
         </div>
       </section>
