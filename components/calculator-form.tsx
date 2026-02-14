@@ -45,16 +45,21 @@ function InputField({
 
   const [displayValue, setDisplayValue] = React.useState(formatDisplayValue(value))
   const [isFocused, setIsFocused] = React.useState(false)
+  const lastValueRef = React.useRef(value)
 
   React.useEffect(() => {
-    if (!isFocused) {
+    // Only update display if not focused AND the value prop actually changed
+    if (!isFocused && Math.abs(value - lastValueRef.current) > 0.001) {
       setDisplayValue(formatDisplayValue(value))
+      lastValueRef.current = value
     }
   }, [value, isFocused])
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true)
     // Show raw number when focused for easier editing
+    // Store the current value as the last known good value
+    lastValueRef.current = value
     setDisplayValue(value ? value.toString() : "")
   }
 
@@ -63,6 +68,24 @@ function InputField({
 
     // Clean the input: remove thousand separators (.) and replace decimal comma with dot
     let cleanValue = e.target.value.trim()
+
+    // If the display value is exactly the same as when we focused, don't do anything
+    const expectedDisplayOnFocus = value ? value.toString() : ""
+    if (cleanValue === expectedDisplayOnFocus) {
+      // User didn't change anything, just restore formatted display
+      setDisplayValue(formatDisplayValue(value))
+      return
+    }
+
+    // If empty, set to 0
+    if (cleanValue === "") {
+      if (value !== 0) {
+        onChange(0)
+        lastValueRef.current = 0
+      }
+      setDisplayValue(formatDisplayValue(0))
+      return
+    }
 
     // Remove all dots (thousand separators)
     cleanValue = cleanValue.replace(/\./g, "")
@@ -73,15 +96,23 @@ function InputField({
     // Remove any spaces
     cleanValue = cleanValue.replace(/\s/g, "")
 
-    // Parse as float, default to 0 if invalid
-    const numValue = parseFloat(cleanValue) || 0
-
-    // Only trigger onChange if the value actually changed
-    if (Math.abs(numValue - value) > 0.001) {
-      onChange(numValue)
+    // Parse as float, default to current value if invalid
+    const numValue = parseFloat(cleanValue)
+    if (isNaN(numValue)) {
+      // Invalid input, keep current value
+      setDisplayValue(formatDisplayValue(value))
+      return
     }
 
-    setDisplayValue(formatDisplayValue(numValue))
+    // Only trigger onChange if the value actually changed (with tolerance for floating point)
+    if (Math.abs(numValue - value) > 0.001) {
+      onChange(numValue)
+      lastValueRef.current = numValue
+      setDisplayValue(formatDisplayValue(numValue))
+    } else {
+      // Value is essentially the same, just update display
+      setDisplayValue(formatDisplayValue(value))
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
