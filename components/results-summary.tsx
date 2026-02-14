@@ -129,6 +129,25 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
           </div>
         </div>
       )}
+
+      {/* Inversion (solo si hay monto invertido) */}
+      {results.montoInvertido > 0 && (
+        <div>
+          <h4 className="font-serif text-base text-foreground mb-2">Analisis de inversion</h4>
+          <div className="rounded-lg border border-border bg-background p-4">
+            <DetailRow label="Monto invertido" value={formatCurrency(results.montoInvertido)} />
+            <Separator className="bg-border" />
+            <DetailRow label="Tasa neta inversion" value={formatPercent(results.tasaNetaInversion)} />
+            <Separator className="bg-border" />
+            <DetailRow label="Valor futuro inversion" value={formatCurrency(results.valorFuturoInversion)} />
+            <Separator className="bg-border" />
+            <DetailRow
+              label="VPN estrategia financiar"
+              value={formatCurrency(results.vpnEstrategia)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
