@@ -60,7 +60,7 @@ function InputField({
     // Show raw number when focused for easier editing
     // Store the current value as the last known good value
     lastValueRef.current = value
-    setDisplayValue(value ? value.toString() : "")
+    setDisplayValue(value ? value.toString().replace(".", ",") : "")
   }
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -70,7 +70,7 @@ function InputField({
     let cleanValue = e.target.value.trim()
 
     // If the display value is exactly the same as when we focused, don't do anything
-    const expectedDisplayOnFocus = value ? value.toString() : ""
+    const expectedDisplayOnFocus = value ? value.toString().replace(".", ",") : ""
     if (cleanValue === expectedDisplayOnFocus) {
       // User didn't change anything, just restore formatted display
       setDisplayValue(formatDisplayValue(value))
