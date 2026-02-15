@@ -43,9 +43,26 @@ function InputField({
     })
   }
 
+  const formatInputValue = (inputStr: string): string => {
+    // Remove all formatting except the number and decimal separator
+    let clean = inputStr.replace(/\./g, "").replace(/\s/g, "")
+
+    // Split by comma (decimal separator)
+    const parts = clean.split(",")
+    const integerPart = parts[0]
+    const decimalPart = parts[1]
+
+    // Add thousand separators to integer part
+    const formatted = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+
+    // Rejoin with decimal part if it exists
+    return decimalPart !== undefined ? `${formatted},${decimalPart}` : formatted
+  }
+
   const [displayValue, setDisplayValue] = React.useState(formatDisplayValue(value))
   const [isFocused, setIsFocused] = React.useState(false)
   const lastValueRef = React.useRef(value)
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     // Only update display if not focused AND the value prop actually changed
@@ -57,10 +74,11 @@ function InputField({
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsFocused(true)
-    // Show raw number when focused for easier editing
+    // Show formatted number when focused (with thousand separators)
     // Store the current value as the last known good value
     lastValueRef.current = value
-    setDisplayValue(value ? value.toString().replace(".", ",") : "")
+    const rawValue = value ? value.toString().replace(".", ",") : ""
+    setDisplayValue(rawValue ? formatInputValue(rawValue) : "")
   }
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -70,7 +88,8 @@ function InputField({
     let cleanValue = e.target.value.trim()
 
     // If the display value is exactly the same as when we focused, don't do anything
-    const expectedDisplayOnFocus = value ? value.toString().replace(".", ",") : ""
+    const rawValue = value ? value.toString().replace(".", ",") : ""
+    const expectedDisplayOnFocus = rawValue ? formatInputValue(rawValue) : ""
     if (cleanValue === expectedDisplayOnFocus) {
       // User didn't change anything, just restore formatted display
       setDisplayValue(formatDisplayValue(value))
@@ -117,9 +136,28 @@ function InputField({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
+    const cursorPosition = e.target.selectionStart || 0
+
     // Only allow numbers, dots, commas, and spaces while typing
     if (newValue === "" || /^[\d.,\s]*$/.test(newValue)) {
-      setDisplayValue(newValue)
+      // Format the input with thousand separators while typing
+      const formatted = newValue === "" ? "" : formatInputValue(newValue)
+
+      // Calculate new cursor position accounting for added/removed separators
+      const beforeCursor = newValue.slice(0, cursorPosition)
+      const dotsBeforeCursor = (beforeCursor.match(/\./g) || []).length
+      const formattedBeforeCursor = beforeCursor === "" ? "" : formatInputValue(beforeCursor)
+      const dotsInFormattedBeforeCursor = (formattedBeforeCursor.match(/\./g) || []).length
+      const newCursorPosition = cursorPosition + (dotsInFormattedBeforeCursor - dotsBeforeCursor)
+
+      setDisplayValue(formatted)
+
+      // Set cursor position after state update
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition)
+        }
+      })
     }
   }
 
@@ -130,6 +168,7 @@ function InputField({
       </Label>
       <div className="relative">
         <Input
+          ref={inputRef}
           id={id}
           type="text"
           value={displayValue}
