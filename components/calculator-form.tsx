@@ -337,9 +337,6 @@ export default function CalculatorForm({ inputs, onChange }: CalculatorFormProps
           </div>
           <h3 className="font-serif text-lg text-foreground">Inversion (opcional)</h3>
         </div>
-        <p className="text-xs text-muted-foreground mb-4">
-          Analiza el costo de oportunidad de invertir el monto no financiado de la obra
-        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <InputField
             id="tasaInversion"
