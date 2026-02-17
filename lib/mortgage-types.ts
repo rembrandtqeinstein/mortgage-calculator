@@ -67,18 +67,18 @@ export interface MortgageResults {
 }
 
 export const DEFAULT_INPUTS: MortgageInputs = {
-  precioInmueble: 300000,
+  precioInmueble: 500000,
   porcentajeFinanciado: 80,
   aniosHipoteca: 30,
-  tasaHipoteca: 2.5,
+  tasaHipoteca: 2,
   comisionAgencia: 3,
-  costoAgencia: 9000, // 3% of 300000
-  gastosEscritura: 2,
-  costosCompra: 6000, // 2% of 300000
-  costoObra: 0,
-  porcentajeFinanciadoObra: 100,
+  costoAgencia: 15000, // 3% of 500000
+  gastosEscritura: 7,
+  costosCompra: 35000, // 7% of 500000
+  costoObra: 140000,
+  porcentajeFinanciadoObra: 0,
   tasaObra: 4,
-  aniosObra: 10,
+  aniosObra: 4,
   costosAdicionales: 150,
   tasaInversion: 7,
   tasaImpuesto: 19,
