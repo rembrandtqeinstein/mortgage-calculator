@@ -19,12 +19,14 @@ interface Oferta {
   porcentajeFinanciado: number
   aniosHipoteca: number
   tasaHipoteca: number
+  tasaHipotecaNoBonificada: number
   costosAdicionales: number
 }
 
 interface ComparadorResultado {
   oferta: Oferta
-  results: MortgageResults
+  resultsBonificada: MortgageResults
+  resultsNoBonificada: MortgageResults
 }
 
 interface ComparadorHipotecaProps {
@@ -39,7 +41,28 @@ const DEFAULT_OFERTA: Omit<Oferta, "id"> = {
   porcentajeFinanciado: 80,
   aniosHipoteca: 30,
   tasaHipoteca: 2,
+  tasaHipotecaNoBonificada: 3,
   costosAdicionales: 0,
+}
+
+function buildMortgageInputs(base: MortgageInputs, oferta: Oferta, tasa: number): MortgageInputs {
+  return {
+    precioInmueble: base.precioInmueble,
+    porcentajeFinanciado: oferta.porcentajeFinanciado,
+    aniosHipoteca: oferta.aniosHipoteca,
+    tasaHipoteca: tasa,
+    costosAdicionales: oferta.costosAdicionales,
+    comisionAgencia: 0,
+    costoAgencia: 0,
+    gastosEscritura: 0,
+    costosCompra: 0,
+    costoObra: 0,
+    porcentajeFinanciadoObra: 0,
+    tasaObra: 0,
+    aniosObra: 0,
+    tasaInversion: 0,
+    tasaImpuesto: 0,
+  }
 }
 
 export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipotecaProps) {
@@ -54,8 +77,11 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
       if (stored) {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Migrate old saved data: ensure costosAdicionales exists
-          setOfertas(parsed.map((o: Oferta) => ({ ...o, costosAdicionales: o.costosAdicionales ?? 0 })))
+          // Migrate old saved data: fill in any missing fields with defaults
+          setOfertas(parsed.map((o: Oferta) => ({
+            ...DEFAULT_OFERTA,
+            ...o,
+          })))
         }
       }
     } catch {}
@@ -98,34 +124,16 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
   const comparar = () => {
     const nuevosResultados: ComparadorResultado[] = ofertas.map((oferta) => ({
       oferta,
-      results: calcularHipoteca({
-        // Only mortgage-relevant fields — no purchase costs from the calculator tab
-        precioInmueble: inputs.precioInmueble,
-        porcentajeFinanciado: oferta.porcentajeFinanciado,
-        aniosHipoteca: oferta.aniosHipoteca,
-        tasaHipoteca: oferta.tasaHipoteca,
-        costosAdicionales: oferta.costosAdicionales,
-        // Zero out purchase costs
-        comisionAgencia: 0,
-        costoAgencia: 0,
-        gastosEscritura: 0,
-        costosCompra: 0,
-        // Zero out obra
-        costoObra: 0,
-        porcentajeFinanciadoObra: 0,
-        tasaObra: 0,
-        aniosObra: 0,
-        // Investment params (not used without obra)
-        tasaInversion: 0,
-        tasaImpuesto: 0,
-      }),
+      resultsBonificada: calcularHipoteca(buildMortgageInputs(inputs, oferta, oferta.tasaHipoteca)),
+      resultsNoBonificada: calcularHipoteca(buildMortgageInputs(inputs, oferta, oferta.tasaHipotecaNoBonificada)),
     }))
     setResultados(nuevosResultados)
   }
 
+  // Best offer = lowest bonificada cuota mensual total
   const mejorOferta = resultados
     ? resultados.reduce((best, curr) =>
-        curr.results.cuotaTotalMensual < best.results.cuotaTotalMensual ? curr : best
+        curr.resultsBonificada.cuotaTotalMensual < best.resultsBonificada.cuotaTotalMensual ? curr : best
       )
     : null
 
@@ -204,6 +212,13 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
                   suffix="%"
                 />
                 <InputField
+                  id={`comp-tin-nobonif-${oferta.id}`}
+                  label="Hipoteca TIN no bonificada"
+                  value={oferta.tasaHipotecaNoBonificada}
+                  onChange={(v) => updateOfertaNumeric(oferta.id, "tasaHipotecaNoBonificada", v)}
+                  suffix="%"
+                />
+                <InputField
                   id={`comp-adicionales-${oferta.id}`}
                   label="Costos adicionales / mes"
                   value={oferta.costosAdicionales}
@@ -258,7 +273,7 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
           {mejorOferta && (
             <div className="flex items-center gap-3 rounded-lg bg-primary/10 border border-primary/30 p-4">
               <Trophy className="w-6 h-6 text-primary flex-shrink-0" />
-              <div>
+              <div className="flex flex-col gap-0.5">
                 <p className="text-sm font-semibold text-foreground">
                   Mejor oferta:{" "}
                   <span className="text-primary">
@@ -266,12 +281,18 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
                   </span>
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Cuota mensual total:{" "}
+                  Bonificada ({mejorOferta.oferta.tasaHipoteca}% TIN):{" "}
                   <span className="font-semibold text-foreground">
-                    {formatCurrency(mejorOferta.results.cuotaTotalMensual)}
+                    {formatCurrency(mejorOferta.resultsBonificada.cuotaTotalMensual)}
                   </span>
                   {" · "}
-                  {mejorOferta.oferta.tasaHipoteca}% TIN · {mejorOferta.oferta.aniosHipoteca} años · {mejorOferta.oferta.porcentajeFinanciado}% financiado
+                  No bonificada ({mejorOferta.oferta.tasaHipotecaNoBonificada}% TIN):{" "}
+                  <span className="font-semibold text-foreground">
+                    {formatCurrency(mejorOferta.resultsNoBonificada.cuotaTotalMensual)}
+                  </span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {mejorOferta.oferta.aniosHipoteca} años · {mejorOferta.oferta.porcentajeFinanciado}% financiado
                 </p>
               </div>
             </div>
@@ -279,13 +300,11 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
 
           {/* Individual results side by side */}
           <div className="flex flex-row gap-6 overflow-x-auto pb-2">
-            {resultados.map(({ oferta, results }) => (
+            {resultados.map(({ oferta, resultsBonificada, resultsNoBonificada }) => (
               <Card
                 key={oferta.id}
-                className={`relative border-border bg-card shadow-sm overflow-hidden flex-shrink-0 w-96 ${
-                  mejorOferta?.oferta.id === oferta.id
-                    ? "ring-2 ring-primary"
-                    : ""
+                className={`relative border-border bg-card shadow-sm overflow-hidden flex-shrink-0 w-[720px] ${
+                  mejorOferta?.oferta.id === oferta.id ? "ring-2 ring-primary" : ""
                 }`}
               >
                 <DecorativeBorder />
@@ -299,12 +318,29 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
                     </CardTitle>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {oferta.tasaHipoteca}% TIN · {oferta.aniosHipoteca} años · {oferta.porcentajeFinanciado}% financiado
+                    {oferta.aniosHipoteca} años · {oferta.porcentajeFinanciado}% financiado
                   </p>
                 </CardHeader>
                 <Separator className="bg-border mx-6" />
                 <CardContent className="relative pt-4">
-                  <ResultsSummary results={results} />
+                  <div className="grid grid-cols-2 divide-x divide-border gap-0">
+                    {/* Bonificada column */}
+                    <div className="pr-6">
+                      <div className="mb-4">
+                        <p className="text-sm font-semibold text-foreground">TIN Bonificada</p>
+                        <p className="text-xs text-muted-foreground">{oferta.tasaHipoteca}%</p>
+                      </div>
+                      <ResultsSummary results={resultsBonificada} />
+                    </div>
+                    {/* No bonificada column */}
+                    <div className="pl-6">
+                      <div className="mb-4">
+                        <p className="text-sm font-semibold text-foreground">TIN No Bonificada</p>
+                        <p className="text-xs text-muted-foreground">{oferta.tasaHipotecaNoBonificada}%</p>
+                      </div>
+                      <ResultsSummary results={resultsNoBonificada} />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}
