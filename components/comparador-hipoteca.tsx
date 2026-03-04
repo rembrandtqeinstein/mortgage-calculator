@@ -19,6 +19,7 @@ interface Oferta {
   porcentajeFinanciado: number
   aniosHipoteca: number
   tasaHipoteca: number
+  costosAdicionales: number
 }
 
 interface ComparadorResultado {
@@ -38,6 +39,7 @@ const DEFAULT_OFERTA: Omit<Oferta, "id"> = {
   porcentajeFinanciado: 80,
   aniosHipoteca: 30,
   tasaHipoteca: 2,
+  costosAdicionales: 0,
 }
 
 export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipotecaProps) {
@@ -52,7 +54,8 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
       if (stored) {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setOfertas(parsed)
+          // Migrate old saved data: ensure costosAdicionales exists
+          setOfertas(parsed.map((o: Oferta) => ({ ...o, costosAdicionales: o.costosAdicionales ?? 0 })))
         }
       }
     } catch {}
@@ -96,10 +99,25 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
     const nuevosResultados: ComparadorResultado[] = ofertas.map((oferta) => ({
       oferta,
       results: calcularHipoteca({
-        ...inputs,
+        // Only mortgage-relevant fields — no purchase costs from the calculator tab
+        precioInmueble: inputs.precioInmueble,
         porcentajeFinanciado: oferta.porcentajeFinanciado,
         aniosHipoteca: oferta.aniosHipoteca,
         tasaHipoteca: oferta.tasaHipoteca,
+        costosAdicionales: oferta.costosAdicionales,
+        // Zero out purchase costs
+        comisionAgencia: 0,
+        costoAgencia: 0,
+        gastosEscritura: 0,
+        costosCompra: 0,
+        // Zero out obra
+        costoObra: 0,
+        porcentajeFinanciadoObra: 0,
+        tasaObra: 0,
+        aniosObra: 0,
+        // Investment params (not used without obra)
+        tasaInversion: 0,
+        tasaImpuesto: 0,
       }),
     }))
     setResultados(nuevosResultados)
@@ -184,6 +202,13 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
                   value={oferta.tasaHipoteca}
                   onChange={(v) => updateOfertaNumeric(oferta.id, "tasaHipoteca", v)}
                   suffix="%"
+                />
+                <InputField
+                  id={`comp-adicionales-${oferta.id}`}
+                  label="Costos adicionales / mes"
+                  value={oferta.costosAdicionales}
+                  onChange={(v) => updateOfertaNumeric(oferta.id, "costosAdicionales", v)}
+                  suffix="EUR"
                 />
               </CardContent>
             </Card>
