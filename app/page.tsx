@@ -9,6 +9,7 @@ import AmortizationChart from "@/components/amortization-chart"
 import InvestmentChart from "@/components/investment-chart"
 import AmortizationTable from "@/components/amortization-table"
 import DecorativeBorder from "@/components/decorative-border"
+import ComparadorHipoteca from "@/components/comparador-hipoteca"
 import { calcularHipoteca } from "@/lib/mortgage-calc"
 import { DEFAULT_INPUTS, type MortgageInputs } from "@/lib/mortgage-types"
 
@@ -71,97 +72,123 @@ export default function Page() {
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Form panel */}
-          <div className="lg:col-span-5">
-            <Card className="relative border-border bg-card shadow-sm overflow-hidden">
-              <DecorativeBorder />
-              <CardHeader className="relative pb-4">
-                <CardTitle className="font-serif text-xl text-foreground">
-                  Datos de la operacion
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Completa los campos para simular tu hipoteca
-                </p>
-              </CardHeader>
-              <CardContent className="relative">
-                <CalculatorForm inputs={inputs} onChange={setInputs} />
-              </CardContent>
-            </Card>
-          </div>
+      {/* Main content with top-level tabs */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Tabs defaultValue="calculador" className="w-full">
+          {/* Tab navigation */}
+          <TabsList className="w-full bg-transparent border-b border-border rounded-none h-auto p-0 justify-start mt-2">
+            <TabsTrigger
+              value="calculador"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
+            >
+              Calculador Hipoteca
+            </TabsTrigger>
+            <TabsTrigger
+              value="comparador"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
+            >
+              Comparador Hipoteca
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Results panel */}
-          <div className="lg:col-span-7 flex flex-col gap-8">
-            <Card className="relative border-border bg-card shadow-sm overflow-hidden">
-              <DecorativeBorder />
-              <CardHeader className="relative pb-4">
-                <CardTitle className="font-serif text-xl text-foreground">
-                  Resumen financiero
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="relative">
-                <ResultsSummary results={results} />
-              </CardContent>
-            </Card>
+          {/* Calculador tab */}
+          <TabsContent value="calculador" className="mt-0 py-8 sm:py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Form panel */}
+              <div className="lg:col-span-5">
+                <Card className="relative border-border bg-card shadow-sm overflow-hidden">
+                  <DecorativeBorder />
+                  <CardHeader className="relative pb-4">
+                    <CardTitle className="font-serif text-xl text-foreground">
+                      Datos de la operacion
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Completa los campos para simular tu hipoteca
+                    </p>
+                  </CardHeader>
+                  <CardContent className="relative">
+                    <CalculatorForm inputs={inputs} onChange={setInputs} />
+                  </CardContent>
+                </Card>
+              </div>
 
-            {/* Charts & Tables */}
-            <Card className="border-border bg-card shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="font-serif text-xl text-foreground">
-                  Amortizacion
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="charts" className="w-full">
-                  <TabsList className="w-full bg-muted">
-                    <TabsTrigger value="charts" className="flex-1 text-xs data-[state=active]:bg-card data-[state=active]:text-foreground">
-                      Graficos
-                    </TabsTrigger>
-                    <TabsTrigger value="table" className="flex-1 text-xs data-[state=active]:bg-card data-[state=active]:text-foreground">
-                      Tabla
-                    </TabsTrigger>
-                  </TabsList>
+              {/* Results panel */}
+              <div className="lg:col-span-7 flex flex-col gap-8">
+                <Card className="relative border-border bg-card shadow-sm overflow-hidden">
+                  <DecorativeBorder />
+                  <CardHeader className="relative pb-4">
+                    <CardTitle className="font-serif text-xl text-foreground">
+                      Resumen financiero
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative">
+                    <ResultsSummary results={results} />
+                  </CardContent>
+                </Card>
 
-                  <TabsContent value="charts" className="mt-6 flex flex-col gap-8">
-                    <AmortizationChart
-                      tabla={results.tablaHipoteca}
-                      title="Hipoteca principal"
-                    />
-                    {results.capitalObra > 0 && (
-                      <AmortizationChart
-                        tabla={results.tablaObra}
-                        title="Prestamo obra"
-                      />
-                    )}
-                    {results.montoInvertido > 0 && (
-                      <InvestmentChart
-                        montoInvertido={results.montoInvertido}
-                        tasaNetaInversion={results.tasaNetaInversion}
-                        plazoAnios={inputs.aniosObra}
-                        cuotaAnualObra={results.cuotaMensualObra * 12}
-                      />
-                    )}
-                  </TabsContent>
+                {/* Charts & Tables */}
+                <Card className="border-border bg-card shadow-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="font-serif text-xl text-foreground">
+                      Amortizacion
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Tabs defaultValue="charts" className="w-full">
+                      <TabsList className="w-full bg-muted">
+                        <TabsTrigger value="charts" className="flex-1 text-xs data-[state=active]:bg-card data-[state=active]:text-foreground">
+                          Graficos
+                        </TabsTrigger>
+                        <TabsTrigger value="table" className="flex-1 text-xs data-[state=active]:bg-card data-[state=active]:text-foreground">
+                          Tabla
+                        </TabsTrigger>
+                      </TabsList>
 
-                  <TabsContent value="table" className="mt-6 flex flex-col gap-8">
-                    <AmortizationTable
-                      tabla={results.tablaHipoteca}
-                      title="Tabla de amortizacion - Hipoteca"
-                    />
-                    {results.capitalObra > 0 && (
-                      <AmortizationTable
-                        tabla={results.tablaObra}
-                        title="Tabla de amortizacion - Obra"
-                      />
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                      <TabsContent value="charts" className="mt-6 flex flex-col gap-8">
+                        <AmortizationChart
+                          tabla={results.tablaHipoteca}
+                          title="Hipoteca principal"
+                        />
+                        {results.capitalObra > 0 && (
+                          <AmortizationChart
+                            tabla={results.tablaObra}
+                            title="Prestamo obra"
+                          />
+                        )}
+                        {results.montoInvertido > 0 && (
+                          <InvestmentChart
+                            montoInvertido={results.montoInvertido}
+                            tasaNetaInversion={results.tasaNetaInversion}
+                            plazoAnios={inputs.aniosObra}
+                            cuotaAnualObra={results.cuotaMensualObra * 12}
+                          />
+                        )}
+                      </TabsContent>
+
+                      <TabsContent value="table" className="mt-6 flex flex-col gap-8">
+                        <AmortizationTable
+                          tabla={results.tablaHipoteca}
+                          title="Tabla de amortizacion - Hipoteca"
+                        />
+                        {results.capitalObra > 0 && (
+                          <AmortizationTable
+                            tabla={results.tablaObra}
+                            title="Tabla de amortizacion - Obra"
+                          />
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Comparador tab */}
+          <TabsContent value="comparador" className="mt-0 py-8 sm:py-12">
+            <ComparadorHipoteca inputs={inputs} onChange={setInputs} />
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Footer */}
