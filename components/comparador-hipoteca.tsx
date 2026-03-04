@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,7 @@ import ResultsSummary from "@/components/results-summary"
 import DecorativeBorder from "@/components/decorative-border"
 import { calcularHipoteca, formatCurrency } from "@/lib/mortgage-calc"
 import type { MortgageInputs, MortgageResults } from "@/lib/mortgage-types"
-import { Trophy, Plus, X } from "lucide-react"
+import { Trophy, Plus, X, Check } from "lucide-react"
 
 interface Oferta {
   id: string
@@ -31,6 +31,8 @@ interface ComparadorHipotecaProps {
   onChange: (inputs: MortgageInputs) => void
 }
 
+const STORAGE_KEY = "comparador-ofertas"
+
 const DEFAULT_OFERTA: Omit<Oferta, "id"> = {
   nombreBanco: "",
   porcentajeFinanciado: 80,
@@ -39,10 +41,30 @@ const DEFAULT_OFERTA: Omit<Oferta, "id"> = {
 }
 
 export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipotecaProps) {
-  const [ofertas, setOfertas] = useState<Oferta[]>([
-    { id: "1", ...DEFAULT_OFERTA },
-  ])
+  const [ofertas, setOfertas] = useState<Oferta[]>([{ id: "1", ...DEFAULT_OFERTA }])
   const [resultados, setResultados] = useState<ComparadorResultado[] | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
+
+  // Load saved ofertas from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setOfertas(parsed)
+        }
+      }
+    } catch {}
+  }, [])
+
+  const guardar = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ofertas))
+      setIsSaved(true)
+      setTimeout(() => setIsSaved(false), 2000)
+    } catch {}
+  }
 
   const updatePrecioInmueble = (precio: number) => {
     const costoAgencia = Math.round(precio * (inputs.comisionAgencia / 100))
@@ -178,8 +200,23 @@ export default function ComparadorHipoteca({ inputs, onChange }: ComparadorHipot
         </div>
       </div>
 
-      {/* Comparar button */}
-      <div className="flex justify-center">
+      {/* Action buttons */}
+      <div className="flex justify-center items-center gap-4">
+        <Button
+          onClick={guardar}
+          size="lg"
+          variant="outline"
+          className="px-8 font-semibold border-border gap-2"
+        >
+          {isSaved ? (
+            <>
+              <Check className="w-4 h-4 text-green-600" />
+              <span className="text-green-600">Guardado</span>
+            </>
+          ) : (
+            "Guardar"
+          )}
+        </Button>
         <Button
           onClick={comparar}
           size="lg"
