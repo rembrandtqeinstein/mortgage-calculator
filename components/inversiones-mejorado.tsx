@@ -182,7 +182,10 @@ export default function InversionesMejorado() {
   })
 
   const addStock = async (symbol: string) => {
-    if (selectedStocks.includes(symbol)) return
+    if (selectedStocks.includes(symbol)) {
+      setError(`${symbol} ya está en la lista`)
+      return
+    }
     if (selectedStocks.length >= 5) {
       setError('Máximo 5 acciones para comparar')
       return
@@ -192,18 +195,24 @@ export default function InversionesMejorado() {
     setError(null)
 
     try {
-      const [details, historical] = await Promise.all([
-        fetchStockDetails(symbol),
-        fetchHistoricalData(symbol, timeRange)
-      ])
+      console.log(`Adding stock: ${symbol}`)
+
+      // Fetch details first
+      const details = await fetchStockDetails(symbol)
+      console.log(`Got details for ${symbol}`)
+
+      // Then fetch historical data
+      const historical = await fetchHistoricalData(symbol, timeRange)
+      console.log(`Got historical data for ${symbol}`)
 
       setSelectedStocks([...selectedStocks, symbol])
       setStockDetails({ ...stockDetails, [symbol]: details })
       setHistoricalData({ ...historicalData, [symbol]: historical })
       setSearchTerm('')
     } catch (err) {
-      setError('Error al cargar datos del símbolo')
-      console.error('Error loading stock:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar datos del símbolo'
+      setError(`${symbol}: ${errorMessage}`)
+      console.error(`Error loading stock ${symbol}:`, err)
     } finally {
       setLoading(false)
     }
@@ -282,8 +291,14 @@ export default function InversionesMejorado() {
 
   const fetchStockDetails = async (symbol: string): Promise<StockDetails> => {
     const response = await fetch(`/api/stock-details?symbol=${symbol}`)
-    if (!response.ok) throw new Error('Error fetching stock details')
-    return await response.json()
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+      console.error(`Failed to fetch details for ${symbol}:`, errorData)
+      throw new Error(errorData.error || `Error fetching ${symbol}`)
+    }
+    const data = await response.json()
+    console.log(`Successfully fetched details for ${symbol}:`, data)
+    return data
   }
 
   const fetchHistoricalData = async (symbol: string, range: string): Promise<HistoricalData[]> => {
