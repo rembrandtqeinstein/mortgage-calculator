@@ -105,7 +105,6 @@ export default function ConsultaZona() {
     const names: { [key: string]: string } = {
       // Básicas
       criminalidad: 'Seguridad',
-      renta: 'Renta Media',
       poblacion: 'Población',
       // Servicios
       educacion: 'Educación',
@@ -122,7 +121,23 @@ export default function ConsultaZona() {
       supermercados: 'Supermercados',
       bancos: 'Bancos',
       cargaEV: 'Carga EV',
-      distanciaCentro: 'Distancia al Centro'
+      distanciaCentro: 'Distancia al Centro',
+      // Movilidad
+      bicicleta: 'Infraestructura Ciclista',
+      trafico: 'Nivel de Tráfico',
+      accesibilidad: 'Accesibilidad',
+      // Familia
+      familias: 'Servicios Familiares',
+      petFriendly: 'Pet-Friendly',
+      // Zona
+      vidaNocturna: 'Vida Nocturna',
+      turismo: 'Nivel Turístico',
+      patrimonio: 'Patrimonio Histórico',
+      coworking: 'Espacios de Trabajo',
+      // Ambiente
+      temperatura: 'Temperatura',
+      horasSol: 'Horas de Sol',
+      altitud: 'Altitud'
     }
     return names[key] || key.charAt(0).toUpperCase() + key.slice(1)
   }
@@ -132,7 +147,11 @@ export default function ConsultaZona() {
       'Básicas': '📊',
       'Servicios': '🏪',
       'Calidad de vida': '🌟',
-      'Infraestructura': '🏗️'
+      'Infraestructura': '🏗️',
+      'Movilidad': '🚴',
+      'Familia': '👨‍👩‍👧‍👦',
+      'Zona': '🏘️',
+      'Ambiente': '🌤️'
     }
     return icons[category] || '📍'
   }
@@ -247,7 +266,7 @@ export default function ConsultaZona() {
           </Card>
 
           {/* Metrics by category */}
-          {['Básicas', 'Servicios', 'Calidad de vida', 'Infraestructura'].map((category) => {
+          {['Básicas', 'Servicios', 'Calidad de vida', 'Infraestructura', 'Movilidad', 'Familia', 'Zona', 'Ambiente'].map((category) => {
             const categoryMetrics = Object.entries(results.metrics).filter(
               ([_, metric]) => metric.category === category
             )
@@ -309,15 +328,17 @@ export default function ConsultaZona() {
                 <div className="space-y-2 text-sm text-blue-900 dark:text-blue-200">
                   <p className="font-medium">ℹ️ Acerca de los datos</p>
                   <p>
-                    Los datos se obtienen en tiempo real de fuentes públicas abiertas:
+                    Los datos se obtienen en tiempo real de múltiples fuentes públicas abiertas:
                   </p>
                   <ul className="list-disc list-inside space-y-1 ml-2 text-xs">
-                    <li><strong>Datos reales (OpenStreetMap):</strong> Educación, transporte, salud, servicios, supermercados, bancos, espacios verdes, ocio, cultura, deporte, aparcamiento y estaciones de carga EV</li>
-                    <li><strong>Estimaciones calculadas:</strong> Población (basada en edificios residenciales), seguridad (basada en servicios de emergencia) y distancia al centro</li>
-                    <li><strong>Pendiente:</strong> Renta media (requiere integración con INE)</li>
+                    <li><strong>OpenStreetMap:</strong> Servicios, comercios, transporte, salud, educación, cultura, deporte, ocio, infraestructura ciclista, accesibilidad, servicios familiares, mascotas, vida nocturna, turismo, patrimonio y espacios de trabajo</li>
+                    <li><strong>Open-Meteo:</strong> Temperatura actual en tiempo real</li>
+                    <li><strong>Sunrise-Sunset:</strong> Horas de luz solar diarias</li>
+                    <li><strong>Open-Elevation:</strong> Altitud sobre el nivel del mar</li>
+                    <li><strong>Calculado:</strong> Población, seguridad, nivel de tráfico y distancia al centro</li>
                   </ul>
                   <p className="text-xs mt-2 opacity-80">
-                    Radio de búsqueda: 500 metros. Los datos son orientativos y se actualizan según la información disponible en las bases de datos públicas.
+                    Radio de búsqueda: 500 metros. Todos los datos son orientativos. Sin API keys requeridas.
                   </p>
                 </div>
               </div>

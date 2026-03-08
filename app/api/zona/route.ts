@@ -15,9 +15,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Consultar datos de diferentes fuentes públicas
-    const [overpassData, catastroData] = await Promise.allSettled([
+    const [overpassData, weatherData, sunData, elevationData] = await Promise.allSettled([
       fetchOverpassData(lat, lng),
-      fetchCatastroData(lat, lng)
+      fetchWeatherData(lat, lng),
+      fetchSunData(lat, lng),
+      fetchElevationData(lat, lng)
     ])
 
     // Agregar datos
@@ -28,15 +30,6 @@ export async function GET(request: NextRequest) {
         max: 100,
         description: 'Índice de seguridad de la zona',
         source: 'Calculado',
-        available: false,
-        category: 'Básicas'
-      },
-      renta: {
-        value: 0,
-        max: null,
-        description: 'Renta media anual',
-        unit: '€/año',
-        source: 'INE',
         available: false,
         category: 'Básicas'
       },
@@ -159,6 +152,113 @@ export async function GET(request: NextRequest) {
         source: 'Calculado',
         available: false,
         category: 'Infraestructura'
+      },
+
+      // Movilidad y accesibilidad
+      bicicleta: {
+        value: 0,
+        max: 100,
+        description: 'Infraestructura ciclista',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Movilidad'
+      },
+      trafico: {
+        value: 0,
+        max: 100,
+        description: 'Nivel de tráfico (inverso)',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Movilidad'
+      },
+      accesibilidad: {
+        value: 0,
+        max: 100,
+        description: 'Infraestructura accesible',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Movilidad'
+      },
+
+      // Familia y mascotas
+      familias: {
+        value: 0,
+        max: 100,
+        description: 'Servicios para familias',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Familia'
+      },
+      petFriendly: {
+        value: 0,
+        max: 100,
+        description: 'Servicios para mascotas',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Familia'
+      },
+
+      // Características de la zona
+      vidaNocturna: {
+        value: 0,
+        max: 100,
+        description: 'Vida nocturna y entretenimiento',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Zona'
+      },
+      turismo: {
+        value: 0,
+        max: 100,
+        description: 'Nivel turístico de la zona',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Zona'
+      },
+      patrimonio: {
+        value: 0,
+        max: 100,
+        description: 'Patrimonio histórico',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Zona'
+      },
+      coworking: {
+        value: 0,
+        max: 100,
+        description: 'Espacios de trabajo',
+        source: 'OpenStreetMap',
+        available: false,
+        category: 'Zona'
+      },
+
+      // Ambiente y clima
+      temperatura: {
+        value: 0,
+        max: null,
+        description: 'Temperatura actual',
+        unit: '°C',
+        source: 'Open-Meteo',
+        available: false,
+        category: 'Ambiente'
+      },
+      horasSol: {
+        value: 0,
+        max: null,
+        description: 'Horas de luz solar hoy',
+        unit: 'h',
+        source: 'Sunrise-Sunset',
+        available: false,
+        category: 'Ambiente'
+      },
+      altitud: {
+        value: 0,
+        max: null,
+        description: 'Altitud sobre nivel del mar',
+        unit: 'm',
+        source: 'Open-Elevation',
+        available: false,
+        category: 'Ambiente'
       }
     }
 
@@ -276,6 +376,90 @@ export async function GET(request: NextRequest) {
       ).length
       metrics.cargaEV.value = Math.min(100, evCharging * 25)
       metrics.cargaEV.available = true
+
+      // Infraestructura ciclista: carriles bici y estaciones de bicicletas compartidas
+      const bikeInfra = overpass.elements.filter((el: any) =>
+        el.tags?.amenity === 'bicycle_rental' ||
+        el.tags?.amenity === 'bicycle_parking' ||
+        el.tags?.cycleway ||
+        el.tags?.highway === 'cycleway'
+      ).length
+      metrics.bicicleta.value = Math.min(100, bikeInfra * 10)
+      metrics.bicicleta.available = true
+
+      // Nivel de tráfico: contar carreteras principales (inverso = menos es mejor)
+      const majorRoads = overpass.elements.filter((el: any) =>
+        el.tags?.highway === 'motorway' ||
+        el.tags?.highway === 'trunk' ||
+        el.tags?.highway === 'primary'
+      ).length
+      metrics.trafico.value = Math.max(0, 100 - (majorRoads * 20)) // Inverso: menos tráfico es mejor
+      metrics.trafico.available = true
+
+      // Accesibilidad: rampas, ascensores, pasos adaptados
+      const accessibility = overpass.elements.filter((el: any) =>
+        el.tags?.wheelchair === 'yes' ||
+        el.tags?.wheelchair === 'designated' ||
+        el.tags?.highway === 'elevator'
+      ).length
+      metrics.accesibilidad.value = Math.min(100, accessibility * 8)
+      metrics.accesibilidad.available = true
+
+      // Servicios para familias: guarderías, parques infantiles
+      const familyServices = overpass.elements.filter((el: any) =>
+        el.tags?.amenity === 'kindergarten' ||
+        el.tags?.amenity === 'childcare' ||
+        el.tags?.leisure === 'playground' ||
+        el.tags?.amenity === 'toy_library'
+      ).length
+      metrics.familias.value = Math.min(100, familyServices * 15)
+      metrics.familias.available = true
+
+      // Pet-friendly: veterinarios, tiendas de mascotas, parques para perros
+      const petServices = overpass.elements.filter((el: any) =>
+        el.tags?.amenity === 'veterinary' ||
+        el.tags?.shop === 'pet' ||
+        el.tags?.leisure === 'dog_park'
+      ).length
+      metrics.petFriendly.value = Math.min(100, petServices * 20)
+      metrics.petFriendly.available = true
+
+      // Vida nocturna: clubs, discotecas, bares de copas
+      const nightlife = overpass.elements.filter((el: any) =>
+        el.tags?.amenity === 'nightclub' ||
+        el.tags?.amenity === 'pub' ||
+        el.tags?.amenity === 'bar'
+      ).length
+      metrics.vidaNocturna.value = Math.min(100, nightlife * 8)
+      metrics.vidaNocturna.available = true
+
+      // Índice turístico: hoteles, hostales, atracciones turísticas
+      const tourism = overpass.elements.filter((el: any) =>
+        el.tags?.tourism === 'hotel' ||
+        el.tags?.tourism === 'hostel' ||
+        el.tags?.tourism === 'guest_house' ||
+        el.tags?.tourism === 'attraction' ||
+        el.tags?.tourism === 'viewpoint'
+      ).length
+      metrics.turismo.value = Math.min(100, tourism * 10)
+      metrics.turismo.available = true
+
+      // Patrimonio histórico: monumentos, edificios históricos
+      const heritage = overpass.elements.filter((el: any) =>
+        el.tags?.historic ||
+        el.tags?.tourism === 'monument' ||
+        el.tags?.building === 'historic'
+      ).length
+      metrics.patrimonio.value = Math.min(100, heritage * 12)
+      metrics.patrimonio.available = true
+
+      // Espacios de coworking y cafés con WiFi
+      const coworking = overpass.elements.filter((el: any) =>
+        el.tags?.amenity === 'coworking_space' ||
+        (el.tags?.amenity === 'cafe' && el.tags?.internet_access === 'wlan')
+      ).length
+      metrics.coworking.value = Math.min(100, coworking * 15)
+      metrics.coworking.available = true
     }
 
     // Procesar datos de Catastro
@@ -333,6 +517,36 @@ export async function GET(request: NextRequest) {
       metrics.distanciaCentro.available = true
     }
 
+    // Procesar datos del clima (Open-Meteo)
+    if (weatherData.status === 'fulfilled' && weatherData.value) {
+      const weather = weatherData.value
+      if (weather.current_weather) {
+        metrics.temperatura.value = Math.round(weather.current_weather.temperature * 10) / 10
+        metrics.temperatura.available = true
+      }
+    }
+
+    // Procesar datos de sol (Sunrise-Sunset)
+    if (sunData.status === 'fulfilled' && sunData.value) {
+      const sun = sunData.value
+      if (sun.results) {
+        const sunrise = new Date(sun.results.sunrise)
+        const sunset = new Date(sun.results.sunset)
+        const hours = (sunset.getTime() - sunrise.getTime()) / (1000 * 60 * 60)
+        metrics.horasSol.value = Math.round(hours * 10) / 10
+        metrics.horasSol.available = true
+      }
+    }
+
+    // Procesar datos de elevación
+    if (elevationData.status === 'fulfilled' && elevationData.value) {
+      const elevation = elevationData.value
+      if (elevation.results && elevation.results.length > 0) {
+        metrics.altitud.value = Math.round(elevation.results[0].elevation)
+        metrics.altitud.available = true
+      }
+    }
+
     return NextResponse.json({
       success: true,
       address,
@@ -377,11 +591,17 @@ async function fetchOverpassData(lat: number, lng: number) {
       node["railway"](around:${radius},${lat},${lng});
       node["leisure"](around:${radius},${lat},${lng});
       node["tourism"](around:${radius},${lat},${lng});
+      node["historic"](around:${radius},${lat},${lng});
+      node["cycleway"](around:${radius},${lat},${lng});
+      node["wheelchair"](around:${radius},${lat},${lng});
       way["building"="residential"](around:${radius},${lat},${lng});
       way["building"="apartments"](around:${radius},${lat},${lng});
       way["building"="house"](around:${radius},${lat},${lng});
+      way["building"="historic"](around:${radius},${lat},${lng});
       way["leisure"="park"](around:${radius},${lat},${lng});
       way["landuse"="grass"](around:${radius},${lat},${lng});
+      way["highway"](around:${radius},${lat},${lng});
+      way["cycleway"](around:${radius},${lat},${lng});
     );
     out body;
   `
@@ -406,13 +626,10 @@ async function fetchOverpassData(lat: number, lng: number) {
   }
 }
 
-// Consultar Catastro (API pública española)
-async function fetchCatastroData(lat: number, lng: number) {
+// Consultar Open-Meteo para datos del clima (sin API key)
+async function fetchWeatherData(lat: number, lng: number) {
   try {
-    // La API de Catastro permite consultas por coordenadas
-    // Documentación: http://www.catastro.minhap.es/webinspire/documentos/Cartociudad.pdf
-    const url = `http://ovc.catastro.meh.es/OVCServWeb/OVCWcfLibres/OVCCoordenadas.svc/Consulta_RCCOOR?` +
-      `SRS=EPSG:4326&Coordenada_X=${lng}&Coordenada_Y=${lat}`
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`
 
     const response = await fetch(url, {
       headers: {
@@ -424,12 +641,53 @@ async function fetchCatastroData(lat: number, lng: number) {
       return null
     }
 
-    const text = await response.text()
-    // La API de Catastro devuelve XML, habría que parsearlo
-    // Por ahora retornamos null y usamos solo OpenStreetMap
-    return null
+    return await response.json()
   } catch (error) {
-    console.error('Error fetching Catastro data:', error)
+    console.error('Error fetching weather data:', error)
+    return null
+  }
+}
+
+// Consultar Sunrise-Sunset API para horas de sol (sin API key)
+async function fetchSunData(lat: number, lng: number) {
+  try {
+    const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&formatted=0`
+
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching sun data:', error)
+    return null
+  }
+}
+
+// Consultar Open-Elevation para datos de altitud (sin API key)
+async function fetchElevationData(lat: number, lng: number) {
+  try {
+    const url = `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`
+
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching elevation data:', error)
     return null
   }
 }
