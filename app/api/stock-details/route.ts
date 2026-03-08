@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getFallbackData, hasFallbackData } from '@/lib/stock-data-fallback'
 
 export async function GET(request: NextRequest) {
   try {
@@ -49,11 +50,31 @@ export async function GET(request: NextRequest) {
       console.log(`[stock-details] Could not enrich ${symbol}, using basic data`)
     }
 
+    // If still missing critical data, use fallback data
+    if ((details.marketCap === 0 || details.peRatio === 0) && hasFallbackData(symbol)) {
+      console.log(`[stock-details] Using fallback data for ${symbol}`)
+      const fallbackData = getFallbackData(symbol)
+      if (fallbackData) {
+        details = {
+          ...details,
+          marketCap: fallbackData.marketCap || details.marketCap,
+          peRatio: fallbackData.peRatio || details.peRatio,
+          eps: fallbackData.eps || details.eps,
+          dividendYield: fallbackData.dividendYield || details.dividendYield,
+          beta: fallbackData.beta || details.beta,
+          fiftyTwoWeekHigh: fallbackData.fiftyTwoWeekHigh || details.fiftyTwoWeekHigh,
+          fiftyTwoWeekLow: fallbackData.fiftyTwoWeekLow || details.fiftyTwoWeekLow
+        }
+        console.log(`[stock-details] Applied fallback data for ${symbol}`)
+      }
+    }
+
     console.log(`[stock-details] Final data for ${symbol}:`, {
       price: details.price,
       marketCap: details.marketCap,
       peRatio: details.peRatio,
-      volume: details.volume
+      volume: details.volume,
+      usedFallback: hasFallbackData(symbol) && (details.marketCap > 0 || details.peRatio > 0)
     })
     return NextResponse.json(details)
   } catch (error) {
