@@ -11,7 +11,7 @@ import AmortizationTable from "@/components/amortization-table"
 import DecorativeBorder from "@/components/decorative-border"
 import ComparadorHipoteca from "@/components/comparador-hipoteca"
 import ConsultaZona from "@/components/consulta-zona"
-import Inversiones from "@/components/inversiones"
+import InversionesMejorado from "@/components/inversiones-mejorado"
 import { calcularHipoteca } from "@/lib/mortgage-calc"
 import { DEFAULT_INPUTS, type MortgageInputs } from "@/lib/mortgage-types"
 
@@ -210,7 +210,7 @@ export default function Page() {
 
           {/* Inversiones tab */}
           <TabsContent value="inversiones" className="mt-0 py-8 sm:py-12">
-            <Inversiones />
+            <InversionesMejorado />
           </TabsContent>
         </Tabs>
       </main>
