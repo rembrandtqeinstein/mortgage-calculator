@@ -16,6 +16,8 @@ interface LocationData {
       max: number | null
       description: string
       unit?: string
+      source?: string
+      available?: boolean
     }
   }
 }
@@ -66,58 +68,25 @@ export default function ConsultaZona() {
       const lng = parseFloat(geocodeData[0].lon)
       const displayName = geocodeData[0].display_name
 
-      // Generar métricas simuladas
-      const metrics = generateMockMetrics(lat, lng)
+      // Obtener datos reales de nuestra API
+      const zonaResponse = await fetch(`/api/zona?lat=${lat}&lng=${lng}&address=${encodeURIComponent(displayName)}`)
+
+      if (!zonaResponse.ok) {
+        throw new Error('Error al obtener datos de la zona')
+      }
+
+      const zonaData = await zonaResponse.json()
 
       setResults({
         address: displayName,
         lat,
         lng,
-        metrics
+        metrics: zonaData.metrics
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const generateMockMetrics = (lat: number, lng: number) => {
-    const seed = Math.abs(lat * lng * 1000) % 100
-
-    return {
-      criminalidad: {
-        value: Math.round(30 + seed * 0.5),
-        max: 100,
-        description: 'Índice de seguridad de la zona'
-      },
-      renta: {
-        value: Math.round(25000 + seed * 300),
-        max: null,
-        description: 'Renta media anual',
-        unit: '€/año'
-      },
-      poblacion: {
-        value: Math.round(5000 + seed * 100),
-        max: null,
-        description: 'Habitantes en la sección censal',
-        unit: 'hab.'
-      },
-      educacion: {
-        value: Math.round(60 + seed * 0.3),
-        max: 100,
-        description: 'Calidad educativa de la zona'
-      },
-      transporte: {
-        value: Math.round(50 + seed * 0.4),
-        max: 100,
-        description: 'Accesibilidad y transporte público'
-      },
-      servicios: {
-        value: Math.round(45 + seed * 0.45),
-        max: 100,
-        description: 'Comercios y servicios cercanos'
-      }
     }
   }
 
@@ -255,8 +224,19 @@ export default function ConsultaZona() {
             {Object.entries(results.metrics).map(([key, metric]) => (
               <Card key={key} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-5 space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {getMetricName(key)}
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {getMetricName(key)}
+                    </div>
+                    {metric.available ? (
+                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
+                        Real
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded">
+                        Estimado
+                      </span>
+                    )}
                   </div>
                   <div className={`text-3xl font-bold ${getScoreClass(metric.value, metric.max)}`}>
                     {metric.unit
@@ -267,25 +247,34 @@ export default function ConsultaZona() {
                   <div className="text-xs text-muted-foreground">
                     {metric.description}
                   </div>
+                  {metric.source && (
+                    <div className="text-xs text-muted-foreground/60">
+                      Fuente: {metric.source}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
 
           {/* Disclaimer */}
-          <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900">
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
             <CardContent className="p-5">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2 text-sm text-amber-900 dark:text-amber-200">
-                  <p className="font-medium">⚠️ Nota importante</p>
+                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2 text-sm text-blue-900 dark:text-blue-200">
+                  <p className="font-medium">ℹ️ Acerca de los datos</p>
                   <p>
-                    Estos son datos simulados para demostración. Para obtener datos reales de miratuzona.com, se necesitaría:
+                    Los datos se obtienen de fuentes públicas abiertas:
                   </p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
-                    <li>Un servidor backend que actúe como proxy</li>
-                    <li>O acceso directo a las APIs de datos públicos españoles (INE, Ministerio Interior, etc.)</li>
+                    <li><strong>Datos reales:</strong> Servicios, transporte y educación provienen de OpenStreetMap</li>
+                    <li><strong>Estimaciones:</strong> Población y seguridad se calculan basándose en datos geográficos</li>
+                    <li><strong>No disponible aún:</strong> Renta media (requiere integración con INE)</li>
                   </ul>
+                  <p className="text-xs mt-2 opacity-80">
+                    Los datos son orientativos y se actualizan según la información disponible en las bases de datos públicas.
+                  </p>
                 </div>
               </div>
             </CardContent>
