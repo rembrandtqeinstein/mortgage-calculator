@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       // Básicas
       criminalidad: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Índice de seguridad de la zona',
         source: 'Calculado',
         available: false,
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
       // Servicios esenciales
       educacion: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Centros educativos cercanos',
         source: 'OpenStreetMap',
         available: false,
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       },
       transporte: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Estaciones de transporte público',
         source: 'OpenStreetMap',
         available: false,
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       },
       servicios: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Comercios y servicios cercanos',
         source: 'OpenStreetMap',
         available: false,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       },
       salud: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Centros médicos y farmacias',
         source: 'OpenStreetMap',
         available: false,
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
       // Calidad de vida
       espaciosVerdes: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Parques y áreas verdes',
         source: 'OpenStreetMap',
         available: false,
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       },
       ocio: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Restaurantes, bares y cafés',
         source: 'OpenStreetMap',
         available: false,
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       },
       cultura: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Museos, teatros y bibliotecas',
         source: 'OpenStreetMap',
         available: false,
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
       },
       deporte: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Instalaciones deportivas',
         source: 'OpenStreetMap',
         available: false,
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
       // Infraestructura
       aparcamiento: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Parkings y estacionamientos',
         source: 'OpenStreetMap',
         available: false,
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
       },
       supermercados: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Supermercados y tiendas',
         source: 'OpenStreetMap',
         available: false,
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
       },
       bancos: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Bancos y cajeros',
         source: 'OpenStreetMap',
         available: false,
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
       },
       cargaEV: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Estaciones de carga eléctrica',
         source: 'OpenStreetMap',
         available: false,
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
       // Movilidad y accesibilidad
       bicicleta: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Infraestructura ciclista',
         source: 'OpenStreetMap',
         available: false,
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
       },
       trafico: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Nivel de tráfico (inverso)',
         source: 'OpenStreetMap',
         available: false,
@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
       },
       accesibilidad: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Infraestructura accesible',
         source: 'OpenStreetMap',
         available: false,
@@ -183,7 +183,7 @@ export async function GET(request: NextRequest) {
       // Familia y mascotas
       familias: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Servicios para familias',
         source: 'OpenStreetMap',
         available: false,
@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
       },
       petFriendly: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Servicios para mascotas',
         source: 'OpenStreetMap',
         available: false,
@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
       // Características de la zona
       vidaNocturna: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Vida nocturna y entretenimiento',
         source: 'OpenStreetMap',
         available: false,
@@ -209,7 +209,7 @@ export async function GET(request: NextRequest) {
       },
       turismo: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Nivel turístico de la zona',
         source: 'OpenStreetMap',
         available: false,
@@ -217,7 +217,7 @@ export async function GET(request: NextRequest) {
       },
       patrimonio: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Patrimonio histórico',
         source: 'OpenStreetMap',
         available: false,
@@ -225,7 +225,7 @@ export async function GET(request: NextRequest) {
       },
       coworking: {
         value: 0,
-        max: 100,
+        max: 10,
         description: 'Espacios de trabajo',
         source: 'OpenStreetMap',
         available: false,
@@ -267,31 +267,31 @@ export async function GET(request: NextRequest) {
       try {
         const overpass = overpassData.value
 
-        // Educación: contar escuelas cercanas
+        // Educación: contar escuelas cercanas (5+ = 10/10)
         const schools = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'school' || el.tags?.amenity === 'university' || el.tags?.amenity === 'kindergarten'
       ).length
-      metrics.educacion.value = Math.min(100, schools * 15)
+      metrics.educacion.value = Math.min(10, schools * 2)
       metrics.educacion.available = true
 
-      // Transporte: contar estaciones de metro, bus, tren
+      // Transporte: contar estaciones de metro, bus, tren (5+ = 10/10)
       const transport = overpass.elements.filter((el: any) =>
         el.tags?.public_transport === 'station' ||
         el.tags?.railway === 'station' ||
         el.tags?.amenity === 'bus_station' ||
         el.tags?.public_transport === 'stop_position'
       ).length
-      metrics.transporte.value = Math.min(100, transport * 20)
+      metrics.transporte.value = Math.min(10, transport * 2)
       metrics.transporte.available = true
 
-      // Servicios generales: contar tiendas y servicios
+      // Servicios generales: contar tiendas y servicios (20+ = 10/10)
       const services = overpass.elements.filter((el: any) =>
         el.tags?.shop && !el.tags?.shop.includes('supermarket')
       ).length
-      metrics.servicios.value = Math.min(100, services * 5)
+      metrics.servicios.value = Math.min(10, services * 0.5)
       metrics.servicios.available = true
 
-      // Salud: hospitales, clínicas, farmacias
+      // Salud: hospitales, clínicas, farmacias (8+ = 10/10)
       const health = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'hospital' ||
         el.tags?.amenity === 'clinic' ||
@@ -299,10 +299,10 @@ export async function GET(request: NextRequest) {
         el.tags?.amenity === 'doctors' ||
         el.tags?.amenity === 'dentist'
       ).length
-      metrics.salud.value = Math.min(100, health * 12)
+      metrics.salud.value = Math.min(10, health * 1.25)
       metrics.salud.available = true
 
-      // Espacios verdes: parques, jardines
+      // Espacios verdes: parques, jardines (10+ = 10/10)
       const greenSpaces = overpass.elements.filter((el: any) =>
         el.tags?.leisure === 'park' ||
         el.tags?.leisure === 'garden' ||
@@ -310,10 +310,10 @@ export async function GET(request: NextRequest) {
         el.tags?.landuse === 'forest' ||
         el.tags?.landuse === 'grass'
       ).length
-      metrics.espaciosVerdes.value = Math.min(100, greenSpaces * 10)
+      metrics.espaciosVerdes.value = Math.min(10, greenSpaces * 1)
       metrics.espaciosVerdes.available = true
 
-      // Ocio: restaurantes, bares, cafés
+      // Ocio: restaurantes, bares, cafés (20+ = 10/10)
       const leisure = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'restaurant' ||
         el.tags?.amenity === 'bar' ||
@@ -321,10 +321,10 @@ export async function GET(request: NextRequest) {
         el.tags?.amenity === 'pub' ||
         el.tags?.amenity === 'fast_food'
       ).length
-      metrics.ocio.value = Math.min(100, leisure * 5)
+      metrics.ocio.value = Math.min(10, leisure * 0.5)
       metrics.ocio.available = true
 
-      // Cultura: museos, teatros, bibliotecas, cines
+      // Cultura: museos, teatros, bibliotecas, cines (5+ = 10/10)
       const culture = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'theatre' ||
         el.tags?.amenity === 'cinema' ||
@@ -333,10 +333,10 @@ export async function GET(request: NextRequest) {
         el.tags?.tourism === 'gallery' ||
         el.tags?.amenity === 'arts_centre'
       ).length
-      metrics.cultura.value = Math.min(100, culture * 20)
+      metrics.cultura.value = Math.min(10, culture * 2)
       metrics.cultura.available = true
 
-      // Deporte: gimnasios, canchas, piscinas
+      // Deporte: gimnasios, canchas, piscinas (7+ = 10/10)
       const sports = overpass.elements.filter((el: any) =>
         el.tags?.leisure === 'sports_centre' ||
         el.tags?.leisure === 'fitness_centre' ||
@@ -344,97 +344,97 @@ export async function GET(request: NextRequest) {
         el.tags?.leisure === 'swimming_pool' ||
         el.tags?.leisure === 'stadium'
       ).length
-      metrics.deporte.value = Math.min(100, sports * 15)
+      metrics.deporte.value = Math.min(10, sports * 1.5)
       metrics.deporte.available = true
 
-      // Aparcamiento: parkings públicos y privados
+      // Aparcamiento: parkings públicos y privados (12+ = 10/10)
       const parking = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'parking' ||
         el.tags?.amenity === 'parking_space'
       ).length
-      metrics.aparcamiento.value = Math.min(100, parking * 8)
+      metrics.aparcamiento.value = Math.min(10, parking * 0.8)
       metrics.aparcamiento.available = true
 
-      // Supermercados
+      // Supermercados (4+ = 10/10)
       const supermarkets = overpass.elements.filter((el: any) =>
         el.tags?.shop === 'supermarket' ||
         el.tags?.shop === 'convenience'
       ).length
-      metrics.supermercados.value = Math.min(100, supermarkets * 25)
+      metrics.supermercados.value = Math.min(10, supermarkets * 2.5)
       metrics.supermercados.available = true
 
-      // Bancos y cajeros
+      // Bancos y cajeros (10+ = 10/10)
       const banks = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'bank' ||
         el.tags?.amenity === 'atm'
       ).length
-      metrics.bancos.value = Math.min(100, banks * 10)
+      metrics.bancos.value = Math.min(10, banks * 1)
       metrics.bancos.available = true
 
-      // Estaciones de carga EV
+      // Estaciones de carga EV (4+ = 10/10)
       const evCharging = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'charging_station'
       ).length
-      metrics.cargaEV.value = Math.min(100, evCharging * 25)
+      metrics.cargaEV.value = Math.min(10, evCharging * 2.5)
       metrics.cargaEV.available = true
 
-      // Infraestructura ciclista: carriles bici y estaciones de bicicletas compartidas
+      // Infraestructura ciclista (10+ = 10/10)
       const bikeInfra = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'bicycle_rental' ||
         el.tags?.amenity === 'bicycle_parking' ||
         el.tags?.cycleway ||
         el.tags?.highway === 'cycleway'
       ).length
-      metrics.bicicleta.value = Math.min(100, bikeInfra * 10)
+      metrics.bicicleta.value = Math.min(10, bikeInfra * 1)
       metrics.bicicleta.available = true
 
-      // Nivel de tráfico: contar carreteras principales (inverso = menos es mejor)
+      // Nivel de tráfico: menos carreteras = mejor (5+ carreteras = 0/10)
       const majorRoads = overpass.elements.filter((el: any) =>
         el.tags?.highway === 'motorway' ||
         el.tags?.highway === 'trunk' ||
         el.tags?.highway === 'primary'
       ).length
-      metrics.trafico.value = Math.max(0, 100 - (majorRoads * 20)) // Inverso: menos tráfico es mejor
+      metrics.trafico.value = Math.max(0, 10 - (majorRoads * 2))
       metrics.trafico.available = true
 
-      // Accesibilidad: rampas, ascensores, pasos adaptados
+      // Accesibilidad (12+ elementos = 10/10)
       const accessibility = overpass.elements.filter((el: any) =>
         el.tags?.wheelchair === 'yes' ||
         el.tags?.wheelchair === 'designated' ||
         el.tags?.highway === 'elevator'
       ).length
-      metrics.accesibilidad.value = Math.min(100, accessibility * 8)
+      metrics.accesibilidad.value = Math.min(10, accessibility * 0.8)
       metrics.accesibilidad.available = true
 
-      // Servicios para familias: guarderías, parques infantiles
+      // Servicios para familias (7+ = 10/10)
       const familyServices = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'kindergarten' ||
         el.tags?.amenity === 'childcare' ||
         el.tags?.leisure === 'playground' ||
         el.tags?.amenity === 'toy_library'
       ).length
-      metrics.familias.value = Math.min(100, familyServices * 15)
+      metrics.familias.value = Math.min(10, familyServices * 1.5)
       metrics.familias.available = true
 
-      // Pet-friendly: veterinarios, tiendas de mascotas, parques para perros
+      // Pet-friendly (5+ = 10/10)
       const petServices = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'veterinary' ||
         el.tags?.shop === 'pet' ||
         el.tags?.leisure === 'dog_park'
       ).length
-      metrics.petFriendly.value = Math.min(100, petServices * 20)
+      metrics.petFriendly.value = Math.min(10, petServices * 2)
       metrics.petFriendly.available = true
 
-      // Vida nocturna: clubs, discotecas, bares de copas
+      // Vida nocturna (12+ = 10/10)
       const nightlife = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'nightclub' ||
         el.tags?.amenity === 'pub' ||
         el.tags?.amenity === 'bar'
       ).length
-      metrics.vidaNocturna.value = Math.min(100, nightlife * 8)
+      metrics.vidaNocturna.value = Math.min(10, nightlife * 0.8)
       metrics.vidaNocturna.available = true
 
-      // Índice turístico: hoteles, hostales, atracciones turísticas
+      // Índice turístico (10+ = 10/10)
       const tourism = overpass.elements.filter((el: any) =>
         el.tags?.tourism === 'hotel' ||
         el.tags?.tourism === 'hostel' ||
@@ -442,24 +442,24 @@ export async function GET(request: NextRequest) {
         el.tags?.tourism === 'attraction' ||
         el.tags?.tourism === 'viewpoint'
       ).length
-      metrics.turismo.value = Math.min(100, tourism * 10)
+      metrics.turismo.value = Math.min(10, tourism * 1)
       metrics.turismo.available = true
 
-      // Patrimonio histórico: monumentos, edificios históricos
+      // Patrimonio histórico (8+ = 10/10)
       const heritage = overpass.elements.filter((el: any) =>
         el.tags?.historic ||
         el.tags?.tourism === 'monument' ||
         el.tags?.building === 'historic'
       ).length
-      metrics.patrimonio.value = Math.min(100, heritage * 12)
+      metrics.patrimonio.value = Math.min(10, heritage * 1.25)
       metrics.patrimonio.available = true
 
-      // Espacios de coworking y cafés con WiFi
+      // Espacios de coworking (7+ = 10/10)
       const coworking = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'coworking_space' ||
         (el.tags?.amenity === 'cafe' && el.tags?.internet_access === 'wlan')
       ).length
-      metrics.coworking.value = Math.min(100, coworking * 15)
+      metrics.coworking.value = Math.min(10, coworking * 1.5)
       metrics.coworking.available = true
       } catch (error) {
         console.warn('Error processing Overpass data:', error instanceof Error ? error.message : 'Unknown error')
@@ -492,7 +492,7 @@ export async function GET(request: NextRequest) {
         el.tags?.amenity === 'fire_station'
       ).length
 
-      const safetyScore = Math.min(100, (police * 25 + hospitals * 15 + fireStations * 20 + 30))
+      const safetyScore = Math.min(10, (police * 2.5 + hospitals * 1.5 + fireStations * 2 + 3))
       metrics.criminalidad.value = safetyScore
       metrics.criminalidad.available = true
       } catch (error) {
