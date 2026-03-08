@@ -13,6 +13,11 @@ const _dmSerif = DM_Serif_Display({
 export const metadata: Metadata = {
   title: 'Calculadora Hipotecaria Madrid',
   description: 'Calcula y desglosa la compra de tu vivienda en Madrid. Simula hipoteca, gastos iniciales, tabla de amortizacion y mas.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+  },
 }
 
 export default function RootLayout({
