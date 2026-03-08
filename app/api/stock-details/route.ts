@@ -13,20 +13,35 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`[stock-details] Fetching details for: ${symbol}`)
-    const details = await fetchYahooFinanceDetails(symbol)
+
+    // Try multiple methods in order of preference
+    let details = null
+
+    // Method 1: Try chart endpoint (most reliable for price)
+    details = await fetchFromChart(symbol)
 
     if (!details) {
-      console.error(`[stock-details] Failed to get details for: ${symbol}`)
+      console.error(`[stock-details] All methods failed for: ${symbol}`)
       return NextResponse.json(
         { error: `No se pudieron obtener datos para ${symbol}` },
         { status: 404 }
       )
     }
 
+    // Try to enrich with additional data from quote endpoint (best effort)
+    try {
+      const enriched = await enrichWithQuoteData(symbol, details)
+      if (enriched) {
+        details = enriched
+      }
+    } catch (error) {
+      console.log(`[stock-details] Could not enrich ${symbol}, using basic data`)
+    }
+
     console.log(`[stock-details] Successfully fetched: ${symbol}`)
     return NextResponse.json(details)
   } catch (error) {
-    console.error('[stock-details] Error:', error)
+    console.error('[stock-details] Unexpected error:', error)
     return NextResponse.json(
       {
         error: 'Error al obtener detalles de la acción',
@@ -37,149 +52,140 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function fetchYahooFinanceDetails(symbol: string) {
+// Primary method: Use chart endpoint (most reliable)
+async function fetchFromChart(symbol: string) {
   try {
-    // Use the quote endpoint which is more reliable and has all data in one call
-    const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
+    console.log(`[chart] Fetching ${symbol}`)
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=5d`
 
-    console.log(`[fetch] Calling Yahoo Finance for ${symbol}`)
-    const response = await fetch(quoteUrl, {
+    const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': '*/*',
         'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://finance.yahoo.com/',
+        'Origin': 'https://finance.yahoo.com'
       },
       signal: AbortSignal.timeout(15000)
     })
 
-    console.log(`[fetch] Response status for ${symbol}: ${response.status}`)
-
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`[fetch] Yahoo Finance error for ${symbol}:`, errorText)
-      return null
-    }
-
-    const data = await response.json()
-    console.log(`[fetch] Response data keys for ${symbol}:`, Object.keys(data))
-
-    if (!data.quoteResponse?.result?.[0]) {
-      console.warn(`[fetch] No quote data in response for ${symbol}`)
-      console.log(`[fetch] Full response:`, JSON.stringify(data, null, 2))
-      return null
-    }
-
-    const quote = data.quoteResponse.result[0]
-    console.log(`[fetch] Quote keys for ${symbol}:`, Object.keys(quote))
-
-    // Extract all data with proper fallbacks
-    const currentPrice = quote.regularMarketPrice || 0
-    const change = quote.regularMarketChange || 0
-    const changePercent = quote.regularMarketChangePercent || 0
-    const currency = quote.currency || 'USD'
-    const name = quote.longName || quote.shortName || symbol
-    const marketState = quote.marketState || 'REGULAR'
-
-    // Financial metrics
-    const marketCap = quote.marketCap || 0
-    const peRatio = quote.trailingPE || 0
-    const eps = quote.epsTrailingTwelveMonths || 0
-    const dividendYield = (quote.dividendYield || 0) * 100 // Convert to percentage
-    const beta = quote.beta || 0
-    const fiftyTwoWeekHigh = quote.fiftyTwoWeekHigh || 0
-    const fiftyTwoWeekLow = quote.fiftyTwoWeekLow || 0
-    const volume = quote.regularMarketVolume || 0
-    const avgVolume = quote.averageDailyVolume3Month || quote.averageVolume || 0
-
-    const result = {
-      symbol,
-      name,
-      price: currentPrice,
-      change,
-      changePercent,
-      currency,
-      marketCap,
-      peRatio,
-      eps,
-      dividendYield,
-      beta,
-      fiftyTwoWeekHigh,
-      fiftyTwoWeekLow,
-      volume,
-      avgVolume,
-      marketState
-    }
-
-    console.log(`[fetch] Successfully extracted data for ${symbol}:`, {
-      price: currentPrice,
-      marketCap,
-      peRatio,
-      volume
-    })
-
-    return result
-  } catch (error) {
-    console.error(`[fetch] Exception for ${symbol}:`, error)
-    if (error instanceof Error) {
-      console.error(`[fetch] Error details:`, error.message, error.stack)
-    }
-
-    // Try fallback with simpler endpoint
-    return await fetchFallbackDetails(symbol)
-  }
-}
-
-// Fallback using simpler chart endpoint
-async function fetchFallbackDetails(symbol: string) {
-  try {
-    console.log(`[fallback] Trying fallback for ${symbol}`)
-    const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`
-
-    const response = await fetch(chartUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Accept': 'application/json'
-      },
-      signal: AbortSignal.timeout(10000)
-    })
-
-    if (!response.ok) {
-      console.error(`[fallback] Failed with status ${response.status}`)
+      console.error(`[chart] HTTP ${response.status} for ${symbol}`)
       return null
     }
 
     const data = await response.json()
 
     if (!data.chart?.result?.[0]) {
-      console.error(`[fallback] No chart data for ${symbol}`)
+      console.error(`[chart] No chart data for ${symbol}`)
       return null
     }
 
     const result = data.chart.result[0]
     const meta = result.meta
+    const indicators = result.indicators?.quote?.[0]
 
-    console.log(`[fallback] Success for ${symbol}`)
+    // Get latest values
+    const timestamps = result.timestamp || []
+    const closes = indicators?.close || []
+    const volumes = indicators?.volume || []
+
+    // Find most recent non-null values
+    let latestPrice = meta.regularMarketPrice
+    let latestVolume = meta.regularMarketVolume || 0
+
+    if (!latestPrice && closes.length > 0) {
+      // Find last non-null close price
+      for (let i = closes.length - 1; i >= 0; i--) {
+        if (closes[i] !== null) {
+          latestPrice = closes[i]
+          break
+        }
+      }
+    }
+
+    if (!latestVolume && volumes.length > 0) {
+      // Find last non-null volume
+      for (let i = volumes.length - 1; i >= 0; i--) {
+        if (volumes[i] !== null) {
+          latestVolume = volumes[i]
+          break
+        }
+      }
+    }
+
+    const previousClose = meta.chartPreviousClose || meta.previousClose || latestPrice
+    const change = latestPrice - previousClose
+    const changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0
+
+    console.log(`[chart] Success for ${symbol}: price=${latestPrice}`)
 
     return {
       symbol,
       name: meta.longName || meta.shortName || symbol,
-      price: meta.regularMarketPrice || meta.previousClose || 0,
-      change: (meta.regularMarketPrice || 0) - (meta.chartPreviousClose || 0),
-      changePercent: ((meta.regularMarketPrice || 0) - (meta.chartPreviousClose || 0)) / (meta.chartPreviousClose || 1) * 100,
+      price: latestPrice || 0,
+      change,
+      changePercent,
       currency: meta.currency || 'USD',
-      marketCap: 0,
+      marketCap: 0, // Will be enriched if possible
       peRatio: 0,
       eps: 0,
       dividendYield: 0,
       beta: 0,
       fiftyTwoWeekHigh: 0,
       fiftyTwoWeekLow: 0,
-      volume: 0,
+      volume: latestVolume,
       avgVolume: 0,
       marketState: meta.marketState || 'REGULAR'
     }
   } catch (error) {
-    console.error(`[fallback] Exception:`, error)
+    console.error(`[chart] Exception for ${symbol}:`, error)
+    return null
+  }
+}
+
+// Try to enrich basic data with quote endpoint (best effort, non-blocking)
+async function enrichWithQuoteData(symbol: string, baseData: any) {
+  try {
+    console.log(`[enrich] Attempting to enrich ${symbol}`)
+    const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': '*/*',
+        'Referer': 'https://finance.yahoo.com/'
+      },
+      signal: AbortSignal.timeout(8000) // Shorter timeout for enrichment
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const data = await response.json()
+    const quote = data.quoteResponse?.result?.[0]
+
+    if (!quote) {
+      return null
+    }
+
+    console.log(`[enrich] Success for ${symbol}`)
+
+    // Merge enriched data with base data
+    return {
+      ...baseData,
+      marketCap: quote.marketCap || baseData.marketCap,
+      peRatio: quote.trailingPE || baseData.peRatio,
+      eps: quote.epsTrailingTwelveMonths || baseData.eps,
+      dividendYield: quote.dividendYield ? quote.dividendYield * 100 : baseData.dividendYield,
+      beta: quote.beta || baseData.beta,
+      fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh || baseData.fiftyTwoWeekHigh,
+      fiftyTwoWeekLow: quote.fiftyTwoWeekLow || baseData.fiftyTwoWeekLow,
+      avgVolume: quote.averageDailyVolume3Month || quote.averageVolume || baseData.avgVolume
+    }
+  } catch (error) {
+    console.log(`[enrich] Could not enrich ${symbol}:`, error)
     return null
   }
 }
