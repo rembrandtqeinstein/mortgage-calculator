@@ -272,6 +272,297 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     beta: 1.08,
     fiftyTwoWeekHigh: 28.45,
     fiftyTwoWeekLow: 21.30
+  },
+  'VWELX': {
+    marketCap: 0,
+    peRatio: 20.5,
+    eps: 0,
+    dividendYield: 2.15,
+    beta: 0.68,
+    fiftyTwoWeekHigh: 52.80,
+    fiftyTwoWeekLow: 43.20
+  },
+  'VWINX': {
+    marketCap: 0,
+    peRatio: 18.2,
+    eps: 0,
+    dividendYield: 2.85,
+    beta: 0.45,
+    fiftyTwoWeekHigh: 31.50,
+    fiftyTwoWeekLow: 27.80
+  },
+  'DODGX': {
+    marketCap: 0,
+    peRatio: 16.8,
+    eps: 0,
+    dividendYield: 1.25,
+    beta: 0.95,
+    fiftyTwoWeekHigh: 315.40,
+    fiftyTwoWeekLow: 248.90
+  },
+  'TRBCX': {
+    marketCap: 0,
+    peRatio: 26.5,
+    eps: 0,
+    dividendYield: 0.52,
+    beta: 1.12,
+    fiftyTwoWeekHigh: 92.50,
+    fiftyTwoWeekLow: 68.40
+  },
+
+  // === Spanish Mutual Funds (ISINs) ===
+  'ES0114910031.MF': {
+    marketCap: 0,
+    peRatio: 22.5,
+    eps: 0,
+    dividendYield: 1.85,
+    beta: 0.95,
+    fiftyTwoWeekHigh: 28.50,
+    fiftyTwoWeekLow: 22.80
+  },
+  'ES0114043074.MF': {
+    marketCap: 0,
+    peRatio: 25.8,
+    eps: 0,
+    dividendYield: 1.32,
+    beta: 1.0,
+    fiftyTwoWeekHigh: 42.50,
+    fiftyTwoWeekLow: 33.20
+  },
+  'ES0114043082.MF': {
+    marketCap: 0,
+    peRatio: 18.5,
+    eps: 0,
+    dividendYield: 2.45,
+    beta: 0.92,
+    fiftyTwoWeekHigh: 35.80,
+    fiftyTwoWeekLow: 28.50
+  },
+  'ES0138420030.MF': {
+    marketCap: 0,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 3.25,
+    beta: 0.25,
+    fiftyTwoWeekHigh: 18.50,
+    fiftyTwoWeekLow: 16.80
+  },
+  'ES0114043058.MF': {
+    marketCap: 0,
+    peRatio: 20.2,
+    eps: 0,
+    dividendYield: 2.15,
+    beta: 0.75,
+    fiftyTwoWeekHigh: 32.40,
+    fiftyTwoWeekLow: 27.20
+  },
+  'ES0113211031.MF': {
+    marketCap: 0,
+    peRatio: 7.5,
+    eps: 0,
+    dividendYield: 4.25,
+    beta: 1.15,
+    fiftyTwoWeekHigh: 22.80,
+    fiftyTwoWeekLow: 16.50
+  },
+  'ES0173678034.MF': {
+    marketCap: 0,
+    peRatio: 15.8,
+    eps: 0,
+    dividendYield: 2.85,
+    beta: 1.08,
+    fiftyTwoWeekHigh: 28.90,
+    fiftyTwoWeekLow: 22.40
+  },
+  'ES0114925005.MF': {
+    marketCap: 0,
+    peRatio: 8.2,
+    eps: 0,
+    dividendYield: 5.15,
+    beta: 1.22,
+    fiftyTwoWeekHigh: 19.50,
+    fiftyTwoWeekLow: 14.20
+  },
+  'ES0114925039.MF': {
+    marketCap: 0,
+    peRatio: 24.5,
+    eps: 0,
+    dividendYield: 1.65,
+    beta: 0.88,
+    fiftyTwoWeekHigh: 26.80,
+    fiftyTwoWeekLow: 21.50
+  },
+
+  // === REITs ===
+  'O': {
+    marketCap: 48000000000,
+    peRatio: 52.5,
+    eps: 1.42,
+    dividendYield: 5.85,
+    beta: 0.62,
+    fiftyTwoWeekHigh: 68.50,
+    fiftyTwoWeekLow: 52.40
+  },
+  'PLD': {
+    marketCap: 125000000000,
+    peRatio: 42.8,
+    eps: 3.15,
+    dividendYield: 3.12,
+    beta: 0.85,
+    fiftyTwoWeekHigh: 142.50,
+    fiftyTwoWeekLow: 108.20
+  },
+  'AMT': {
+    marketCap: 98000000000,
+    peRatio: 48.5,
+    eps: 4.52,
+    dividendYield: 3.45,
+    beta: 0.58,
+    fiftyTwoWeekHigh: 228.40,
+    fiftyTwoWeekLow: 182.50
+  },
+
+  // === Bond ETFs ===
+  'BND': {
+    marketCap: 102000000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 4.25,
+    beta: 0.08,
+    fiftyTwoWeekHigh: 73.50,
+    fiftyTwoWeekLow: 69.20
+  },
+  'TLT': {
+    marketCap: 45000000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 4.85,
+    beta: -0.32,
+    fiftyTwoWeekHigh: 98.50,
+    fiftyTwoWeekLow: 82.40
+  },
+  'LQD': {
+    marketCap: 38000000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 5.15,
+    beta: 0.18,
+    fiftyTwoWeekHigh: 108.50,
+    fiftyTwoWeekLow: 98.20
+  },
+
+  // === Sector ETFs ===
+  'XLF': {
+    marketCap: 52000000000,
+    peRatio: 15.2,
+    eps: 0,
+    dividendYield: 1.85,
+    beta: 1.12,
+    fiftyTwoWeekHigh: 48.50,
+    fiftyTwoWeekLow: 36.20
+  },
+  'XLK': {
+    marketCap: 68000000000,
+    peRatio: 35.8,
+    eps: 0,
+    dividendYield: 0.68,
+    beta: 1.18,
+    fiftyTwoWeekHigh: 245.80,
+    fiftyTwoWeekLow: 182.40
+  },
+  'XLE': {
+    marketCap: 38000000000,
+    peRatio: 12.5,
+    eps: 0,
+    dividendYield: 3.45,
+    beta: 1.05,
+    fiftyTwoWeekHigh: 95.50,
+    fiftyTwoWeekLow: 72.80
+  },
+
+  // === Thematic ETFs ===
+  'ARKK': {
+    marketCap: 8500000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 0,
+    beta: 1.85,
+    fiftyTwoWeekHigh: 58.20,
+    fiftyTwoWeekLow: 38.50
+  },
+  'ICLN': {
+    marketCap: 5200000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 0.85,
+    beta: 1.42,
+    fiftyTwoWeekHigh: 24.80,
+    fiftyTwoWeekLow: 17.20
+  },
+  'SOXX': {
+    marketCap: 12000000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 0.52,
+    beta: 1.45,
+    fiftyTwoWeekHigh: 265.80,
+    fiftyTwoWeekLow: 182.50
+  },
+
+  // === Additional ETFs ===
+  'SLV': {
+    marketCap: 14000000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 0,
+    beta: 0.52,
+    fiftyTwoWeekHigh: 32.50,
+    fiftyTwoWeekLow: 22.80
+  },
+  'DIA': {
+    marketCap: 32000000000,
+    peRatio: 23.5,
+    eps: 0,
+    dividendYield: 1.68,
+    beta: 0.98,
+    fiftyTwoWeekHigh: 450.20,
+    fiftyTwoWeekLow: 370.80
+  },
+  'IWM': {
+    marketCap: 68000000000,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 1.25,
+    beta: 1.18,
+    fiftyTwoWeekHigh: 235.50,
+    fiftyTwoWeekLow: 185.40
+  },
+  'SCHD': {
+    marketCap: 62000000000,
+    peRatio: 16.8,
+    eps: 0,
+    dividendYield: 3.52,
+    beta: 0.92,
+    fiftyTwoWeekHigh: 32.80,
+    fiftyTwoWeekLow: 26.50
+  },
+  'VXUS': {
+    marketCap: 95000000000,
+    peRatio: 16.2,
+    eps: 0,
+    dividendYield: 3.15,
+    beta: 0.88,
+    fiftyTwoWeekHigh: 72.50,
+    fiftyTwoWeekLow: 58.20
+  },
+  'FXI': {
+    marketCap: 8200000000,
+    peRatio: 10.5,
+    eps: 0,
+    dividendYield: 4.25,
+    beta: 0.95,
+    fiftyTwoWeekHigh: 32.80,
+    fiftyTwoWeekLow: 22.40
   }
 }
 
