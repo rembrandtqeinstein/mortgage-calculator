@@ -113,6 +113,16 @@ const POPULAR_STOCKS = [
   { symbol: 'GLD', name: 'SPDR Gold Trust', market: '📊', category: 'ETFs' },
   { symbol: 'VNQ', name: 'Vanguard Real Estate', market: '📊', category: 'ETFs' },
 
+  // === FONDOS MUTUOS ===
+  { symbol: 'POLRX', name: 'Prologis Institutional Fund', market: '🏢', category: 'Fondos' },
+  { symbol: 'VFIAX', name: 'Vanguard 500 Index Fund', market: '🏢', category: 'Fondos' },
+  { symbol: 'FXAIX', name: 'Fidelity 500 Index Fund', market: '🏢', category: 'Fondos' },
+  { symbol: 'VTSAX', name: 'Vanguard Total Stock Market', market: '🏢', category: 'Fondos' },
+  { symbol: 'VGTSX', name: 'Vanguard Total Intl Stock', market: '🏢', category: 'Fondos' },
+  { symbol: 'VBTLX', name: 'Vanguard Total Bond Market', market: '🏢', category: 'Fondos' },
+  { symbol: 'PRMTX', name: 'T. Rowe Price Blue Chip Growth', market: '🏢', category: 'Fondos' },
+  { symbol: 'FCNTX', name: 'Fidelity Contrafund', market: '🏢', category: 'Fondos' },
+
   // === COMMODITIES ===
   { symbol: 'GC=F', name: 'Oro (Gold)', market: '🥇', category: 'Commodities' },
   { symbol: 'SI=F', name: 'Plata (Silver)', market: '🥈', category: 'Commodities' },

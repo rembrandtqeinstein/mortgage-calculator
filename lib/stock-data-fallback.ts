@@ -198,6 +198,80 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     beta: 0,
     fiftyTwoWeekHigh: 12500.00,
     fiftyTwoWeekLow: 9800.00
+  },
+
+  // === Mutual Funds ===
+  'POLRX': {
+    marketCap: 0, // N/A for mutual funds
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 2.85,
+    beta: 0.45,
+    fiftyTwoWeekHigh: 68.50,
+    fiftyTwoWeekLow: 55.20
+  },
+  'VFIAX': {
+    marketCap: 0,
+    peRatio: 25.8,
+    eps: 0,
+    dividendYield: 1.32,
+    beta: 1.0,
+    fiftyTwoWeekHigh: 625.00,
+    fiftyTwoWeekLow: 502.00
+  },
+  'FXAIX': {
+    marketCap: 0,
+    peRatio: 25.7,
+    eps: 0,
+    dividendYield: 1.31,
+    beta: 1.0,
+    fiftyTwoWeekHigh: 228.50,
+    fiftyTwoWeekLow: 183.40
+  },
+  'VTSAX': {
+    marketCap: 0,
+    peRatio: 24.5,
+    eps: 0,
+    dividendYield: 1.38,
+    beta: 1.0,
+    fiftyTwoWeekHigh: 140.20,
+    fiftyTwoWeekLow: 111.25
+  },
+  'VGTSX': {
+    marketCap: 0,
+    peRatio: 16.8,
+    eps: 0,
+    dividendYield: 2.95,
+    beta: 0.92,
+    fiftyTwoWeekHigh: 21.45,
+    fiftyTwoWeekLow: 16.80
+  },
+  'VBTLX': {
+    marketCap: 0,
+    peRatio: 0,
+    eps: 0,
+    dividendYield: 3.85,
+    beta: 0.15,
+    fiftyTwoWeekHigh: 12.85,
+    fiftyTwoWeekLow: 10.20
+  },
+  'PRMTX': {
+    marketCap: 0,
+    peRatio: 28.5,
+    eps: 0,
+    dividendYield: 0.42,
+    beta: 1.15,
+    fiftyTwoWeekHigh: 195.80,
+    fiftyTwoWeekLow: 142.50
+  },
+  'FCNTX': {
+    marketCap: 0,
+    peRatio: 24.8,
+    eps: 0,
+    dividendYield: 0.18,
+    beta: 1.08,
+    fiftyTwoWeekHigh: 28.45,
+    fiftyTwoWeekLow: 21.30
   }
 }
 
