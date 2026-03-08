@@ -310,8 +310,11 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 68.40
   },
 
-  // === Spanish Mutual Funds (ISINs) ===
+  // === Spanish Mutual Funds (ISINs) - Static data only ===
   'ES0114910031.MF': {
+    name: 'CaixaBank Tendencias',
+    price: 25.85,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 22.5,
     eps: 0,
@@ -321,6 +324,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 22.80
   },
   'ES0114043074.MF': {
+    name: 'CaixaBank Bolsa USA',
+    price: 38.45,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 25.8,
     eps: 0,
@@ -330,6 +336,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 33.20
   },
   'ES0114043082.MF': {
+    name: 'CaixaBank Bolsa Europa',
+    price: 32.15,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 18.5,
     eps: 0,
@@ -339,6 +348,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 28.50
   },
   'ES0138420030.MF': {
+    name: 'CaixaBank Master Renta Fija',
+    price: 17.65,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 0,
     eps: 0,
@@ -348,6 +360,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 16.80
   },
   'ES0114043058.MF': {
+    name: 'CaixaBank Multiasset',
+    price: 29.80,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 20.2,
     eps: 0,
@@ -357,6 +372,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 27.20
   },
   'ES0113211031.MF': {
+    name: 'Santander Acciones Españolas',
+    price: 19.65,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 7.5,
     eps: 0,
@@ -366,6 +384,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 16.50
   },
   'ES0173678034.MF': {
+    name: 'Santander Small Caps Euro',
+    price: 25.65,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 15.8,
     eps: 0,
@@ -375,6 +396,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 22.40
   },
   'ES0114925005.MF': {
+    name: 'BBVA Bolsa',
+    price: 16.85,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 8.2,
     eps: 0,
@@ -384,6 +408,9 @@ export const STOCK_DATA_FALLBACK: { [key: string]: any } = {
     fiftyTwoWeekLow: 14.20
   },
   'ES0114925039.MF': {
+    name: 'BBVA Futuro Sostenible',
+    price: 24.15,
+    currency: 'EUR',
     marketCap: 0,
     peRatio: 24.5,
     eps: 0,

@@ -21,6 +21,32 @@ export async function GET(request: NextRequest) {
     // Method 1: Try chart endpoint (most reliable for price)
     details = await fetchFromChart(symbol)
 
+    // If chart fails but we have fallback data, use static data entirely
+    if (!details && hasFallbackData(symbol)) {
+      console.log(`[stock-details] Chart failed for ${symbol}, using complete fallback data`)
+      const fallbackData = getFallbackData(symbol)
+      details = {
+        symbol,
+        name: fallbackData.name || symbol,
+        price: fallbackData.price || 0,
+        change: 0,
+        changePercent: 0,
+        currency: fallbackData.currency || 'EUR',
+        marketCap: fallbackData.marketCap || 0,
+        peRatio: fallbackData.peRatio || 0,
+        eps: fallbackData.eps || 0,
+        dividendYield: fallbackData.dividendYield || 0,
+        beta: fallbackData.beta || 0,
+        fiftyTwoWeekHigh: fallbackData.fiftyTwoWeekHigh || 0,
+        fiftyTwoWeekLow: fallbackData.fiftyTwoWeekLow || 0,
+        volume: 0,
+        avgVolume: 0,
+        marketState: 'CLOSED'
+      }
+      console.log(`[stock-details] Using complete fallback for ${symbol}`)
+      return NextResponse.json(details)
+    }
+
     if (!details) {
       console.error(`[stock-details] All methods failed for: ${symbol}`)
       return NextResponse.json(
