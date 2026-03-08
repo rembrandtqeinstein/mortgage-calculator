@@ -28,17 +28,33 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Try to enrich with additional data from quote endpoint (best effort)
+    // Try to enrich with additional data (try multiple methods)
     try {
-      const enriched = await enrichWithQuoteData(symbol, details)
+      // Try method 1: quote endpoint
+      let enriched = await enrichWithQuoteData(symbol, details)
       if (enriched) {
         details = enriched
+        console.log(`[stock-details] Enriched ${symbol} with quote data`)
+      }
+
+      // If still missing data, try method 2: quoteSummary
+      if (details.marketCap === 0 || details.peRatio === 0) {
+        const summaryEnriched = await enrichWithSummaryData(symbol, details)
+        if (summaryEnriched) {
+          details = summaryEnriched
+          console.log(`[stock-details] Enriched ${symbol} with summary data`)
+        }
       }
     } catch (error) {
       console.log(`[stock-details] Could not enrich ${symbol}, using basic data`)
     }
 
-    console.log(`[stock-details] Successfully fetched: ${symbol}`)
+    console.log(`[stock-details] Final data for ${symbol}:`, {
+      price: details.price,
+      marketCap: details.marketCap,
+      peRatio: details.peRatio,
+      volume: details.volume
+    })
     return NextResponse.json(details)
   } catch (error) {
     console.error('[stock-details] Unexpected error:', error)
@@ -147,19 +163,21 @@ async function fetchFromChart(symbol: string) {
 // Try to enrich basic data with quote endpoint (best effort, non-blocking)
 async function enrichWithQuoteData(symbol: string, baseData: any) {
   try {
-    console.log(`[enrich] Attempting to enrich ${symbol}`)
+    console.log(`[quote-enrich] Attempting to enrich ${symbol}`)
     const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}`
 
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': '*/*',
-        'Referer': 'https://finance.yahoo.com/'
+        'Referer': 'https://finance.yahoo.com/',
+        'Origin': 'https://finance.yahoo.com'
       },
-      signal: AbortSignal.timeout(8000) // Shorter timeout for enrichment
+      signal: AbortSignal.timeout(10000)
     })
 
     if (!response.ok) {
+      console.log(`[quote-enrich] HTTP ${response.status} for ${symbol}`)
       return null
     }
 
@@ -167,10 +185,15 @@ async function enrichWithQuoteData(symbol: string, baseData: any) {
     const quote = data.quoteResponse?.result?.[0]
 
     if (!quote) {
+      console.log(`[quote-enrich] No quote data for ${symbol}`)
       return null
     }
 
-    console.log(`[enrich] Success for ${symbol}`)
+    console.log(`[quote-enrich] Got data for ${symbol}:`, {
+      marketCap: quote.marketCap,
+      trailingPE: quote.trailingPE,
+      beta: quote.beta
+    })
 
     // Merge enriched data with base data
     return {
@@ -185,7 +208,88 @@ async function enrichWithQuoteData(symbol: string, baseData: any) {
       avgVolume: quote.averageDailyVolume3Month || quote.averageVolume || baseData.avgVolume
     }
   } catch (error) {
-    console.log(`[enrich] Could not enrich ${symbol}:`, error)
+    console.log(`[quote-enrich] Exception for ${symbol}:`, error)
+    return null
+  }
+}
+
+// Try to enrich with quoteSummary endpoint (more detailed data)
+async function enrichWithSummaryData(symbol: string, baseData: any) {
+  try {
+    console.log(`[summary-enrich] Attempting to enrich ${symbol}`)
+    const modules = 'price,summaryDetail,defaultKeyStatistics,financialData'
+    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=${modules}`
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': '*/*',
+        'Referer': 'https://finance.yahoo.com/',
+        'Origin': 'https://finance.yahoo.com'
+      },
+      signal: AbortSignal.timeout(10000)
+    })
+
+    if (!response.ok) {
+      console.log(`[summary-enrich] HTTP ${response.status} for ${symbol}`)
+      return null
+    }
+
+    const data = await response.json()
+    const result = data.quoteSummary?.result?.[0]
+
+    if (!result) {
+      console.log(`[summary-enrich] No summary data for ${symbol}`)
+      return null
+    }
+
+    const price = result.price
+    const summaryDetail = result.summaryDetail
+    const keyStats = result.defaultKeyStatistics
+    const financialData = result.financialData
+
+    console.log(`[summary-enrich] Got modules for ${symbol}:`, Object.keys(result))
+
+    // Extract data from various modules
+    const enrichedData = { ...baseData }
+
+    // From price module
+    if (price) {
+      enrichedData.marketCap = price.marketCap?.raw || enrichedData.marketCap
+    }
+
+    // From summaryDetail module
+    if (summaryDetail) {
+      enrichedData.marketCap = summaryDetail.marketCap?.raw || enrichedData.marketCap
+      enrichedData.dividendYield = summaryDetail.dividendYield?.raw ? summaryDetail.dividendYield.raw * 100 : enrichedData.dividendYield
+      enrichedData.fiftyTwoWeekHigh = summaryDetail.fiftyTwoWeekHigh?.raw || enrichedData.fiftyTwoWeekHigh
+      enrichedData.fiftyTwoWeekLow = summaryDetail.fiftyTwoWeekLow?.raw || enrichedData.fiftyTwoWeekLow
+      enrichedData.beta = summaryDetail.beta?.raw || enrichedData.beta
+      enrichedData.avgVolume = summaryDetail.averageVolume?.raw || enrichedData.avgVolume
+    }
+
+    // From keyStats module
+    if (keyStats) {
+      enrichedData.beta = enrichedData.beta || keyStats.beta?.raw || 0
+    }
+
+    // From financialData module
+    if (financialData) {
+      if (financialData.currentPrice?.raw && financialData.trailingEps?.raw) {
+        enrichedData.peRatio = financialData.currentPrice.raw / financialData.trailingEps.raw
+      }
+      enrichedData.eps = financialData.trailingEps?.raw || enrichedData.eps
+    }
+
+    console.log(`[summary-enrich] Enriched ${symbol} with:`, {
+      marketCap: enrichedData.marketCap,
+      peRatio: enrichedData.peRatio,
+      beta: enrichedData.beta
+    })
+
+    return enrichedData
+  } catch (error) {
+    console.log(`[summary-enrich] Exception for ${symbol}:`, error)
     return null
   }
 }
