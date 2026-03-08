@@ -11,6 +11,7 @@ import AmortizationTable from "@/components/amortization-table"
 import DecorativeBorder from "@/components/decorative-border"
 import ComparadorHipoteca from "@/components/comparador-hipoteca"
 import ConsultaZona from "@/components/consulta-zona"
+import Inversiones from "@/components/inversiones"
 import { calcularHipoteca } from "@/lib/mortgage-calc"
 import { DEFAULT_INPUTS, type MortgageInputs } from "@/lib/mortgage-types"
 
@@ -95,6 +96,12 @@ export default function Page() {
               className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
             >
               Consulta de Zona
+            </TabsTrigger>
+            <TabsTrigger
+              value="inversiones"
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
+            >
+              Inversiones
             </TabsTrigger>
           </TabsList>
 
@@ -199,6 +206,11 @@ export default function Page() {
           {/* Consulta de Zona tab */}
           <TabsContent value="consulta-zona" className="mt-0 py-8 sm:py-12">
             <ConsultaZona />
+          </TabsContent>
+
+          {/* Inversiones tab */}
+          <TabsContent value="inversiones" className="mt-0 py-8 sm:py-12">
+            <Inversiones />
           </TabsContent>
         </Tabs>
       </main>
