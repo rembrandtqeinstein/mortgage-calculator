@@ -558,8 +558,13 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error en API zona:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
     return NextResponse.json(
-      { error: 'Error al obtener datos de la zona' },
+      {
+        error: 'Error al obtener datos de la zona',
+        details: errorMessage,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }
@@ -612,16 +617,18 @@ async function fetchOverpassData(lat: number, lng: number) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: `data=${encodeURIComponent(query)}`
+      body: `data=${encodeURIComponent(query)}`,
+      signal: AbortSignal.timeout(10000) // 10 second timeout for Overpass
     })
 
     if (!response.ok) {
-      throw new Error(`Overpass API error: ${response.status}`)
+      console.warn(`Overpass API returned ${response.status}`)
+      return null
     }
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching Overpass data:', error)
+    console.warn('Overpass API unavailable:', error instanceof Error ? error.message : 'Unknown error')
     return null
   }
 }
@@ -634,16 +641,18 @@ async function fetchWeatherData(lat: number, lng: number) {
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json'
-      }
+      },
+      signal: AbortSignal.timeout(5000) // 5 second timeout
     })
 
     if (!response.ok) {
+      console.warn(`Weather API returned ${response.status}`)
       return null
     }
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching weather data:', error)
+    console.warn('Weather API unavailable:', error instanceof Error ? error.message : 'Unknown error')
     return null
   }
 }
@@ -656,16 +665,18 @@ async function fetchSunData(lat: number, lng: number) {
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json'
-      }
+      },
+      signal: AbortSignal.timeout(5000)
     })
 
     if (!response.ok) {
+      console.warn(`Sun API returned ${response.status}`)
       return null
     }
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching sun data:', error)
+    console.warn('Sun API unavailable:', error instanceof Error ? error.message : 'Unknown error')
     return null
   }
 }
@@ -678,16 +689,18 @@ async function fetchElevationData(lat: number, lng: number) {
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/json'
-      }
+      },
+      signal: AbortSignal.timeout(5000)
     })
 
     if (!response.ok) {
+      console.warn(`Elevation API returned ${response.status}`)
       return null
     }
 
     return await response.json()
   } catch (error) {
-    console.error('Error fetching elevation data:', error)
+    console.warn('Elevation API unavailable:', error instanceof Error ? error.message : 'Unknown error')
     return null
   }
 }
