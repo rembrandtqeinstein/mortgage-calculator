@@ -77,33 +77,35 @@ export default function Page() {
       {/* Main content with top-level tabs */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Tabs defaultValue="calculador" className="w-full">
-          {/* Tab navigation */}
-          <TabsList className="w-full bg-transparent border-b border-border rounded-none h-auto p-0 justify-start mt-2">
-            <TabsTrigger
-              value="calculador"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
-            >
-              Calculador Hipoteca
-            </TabsTrigger>
-            <TabsTrigger
-              value="comparador"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
-            >
-              Comparador Hipoteca
-            </TabsTrigger>
-            <TabsTrigger
-              value="consulta-zona"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
-            >
-              Consulta de Zona
-            </TabsTrigger>
-            <TabsTrigger
-              value="inversiones"
-              className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-6 py-3 font-serif text-base hover:text-foreground transition-colors"
-            >
-              Inversiones
-            </TabsTrigger>
-          </TabsList>
+          {/* Tab navigation with horizontal scroll on mobile */}
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="w-full min-w-max sm:min-w-0 bg-transparent border-b border-border rounded-none h-auto p-0 justify-start mt-2 inline-flex sm:flex">
+              <TabsTrigger
+                value="calculador"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-4 sm:px-6 py-3 font-serif text-sm sm:text-base hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                Calculador Hipoteca
+              </TabsTrigger>
+              <TabsTrigger
+                value="comparador"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-4 sm:px-6 py-3 font-serif text-sm sm:text-base hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                Comparador Hipoteca
+              </TabsTrigger>
+              <TabsTrigger
+                value="consulta-zona"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-4 sm:px-6 py-3 font-serif text-sm sm:text-base hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                Consulta de Zona
+              </TabsTrigger>
+              <TabsTrigger
+                value="inversiones"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-4 sm:px-6 py-3 font-serif text-sm sm:text-base hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                Inversiones
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Calculador tab */}
           <TabsContent value="calculador" className="mt-0 py-8 sm:py-12">

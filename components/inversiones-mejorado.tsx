@@ -130,17 +130,6 @@ const POPULAR_STOCKS = [
   { symbol: 'DODGX', name: 'Dodge & Cox Stock Fund', market: '🏢', category: 'Fondos USA' },
   { symbol: 'TRBCX', name: 'T. Rowe Price Capital App', market: '🏢', category: 'Fondos USA' },
 
-  // === FONDOS ESPAÑOLES (CaixaBank y otros) ===
-  { symbol: 'ES0114910031.MF', name: 'CaixaBank Tendencias', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0114043074.MF', name: 'CaixaBank Bolsa USA', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0114043082.MF', name: 'CaixaBank Bolsa Europa', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0138420030.MF', name: 'CaixaBank Master Renta Fija', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0114043058.MF', name: 'CaixaBank Multiasset', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0113211031.MF', name: 'Santander Acciones Españolas', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0173678034.MF', name: 'Santander Small Caps Euro', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0114925005.MF', name: 'BBVA Bolsa', market: '🇪🇸', category: 'Fondos España' },
-  { symbol: 'ES0114925039.MF', name: 'BBVA Futuro Sostenible', market: '🇪🇸', category: 'Fondos España' },
-
   // === REITs (Real Estate Investment Trusts) ===
   { symbol: 'O', name: 'Realty Income', market: '🏘️', category: 'REITs' },
   { symbol: 'PLD', name: 'Prologis', market: '🏘️', category: 'REITs' },
