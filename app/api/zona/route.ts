@@ -267,12 +267,30 @@ export async function GET(request: NextRequest) {
       try {
         const overpass = overpassData.value
 
-        // Educación: contar escuelas cercanas (5+ = 10/10)
+        // Educación: evaluar cobertura completa del recorrido educativo (infantil → universidad)
+        const kindergartens = overpass.elements.filter((el: any) =>
+          el.tags?.amenity === 'kindergarten' || el.tags?.amenity === 'childcare'
+        ).length
         const schools = overpass.elements.filter((el: any) =>
-        el.tags?.amenity === 'school' || el.tags?.amenity === 'university' || el.tags?.amenity === 'kindergarten'
-      ).length
-      metrics.educacion.value = Math.min(10, schools * 2)
-      metrics.educacion.available = true
+          el.tags?.amenity === 'school'
+        ).length
+        const universities = overpass.elements.filter((el: any) =>
+          el.tags?.amenity === 'university' || el.tags?.amenity === 'college'
+        ).length
+
+        // Sistema de puntos por cobertura de etapas educativas:
+        // - Infantil (0-6 años): kindergarten = 2 puntos
+        // - Primaria/Secundaria/Bachillerato (6-18 años): school = 5 puntos (asume cobertura completa)
+        // - Universidad (18+ años): university = 2 puntos
+        // - Bonus por completitud: si tiene las 3 categorías = +1 punto
+        let educationScore = 0
+        if (kindergartens > 0) educationScore += 2  // Infantil cubierto
+        if (schools > 0) educationScore += 5         // Primaria + Secundaria + Bach/FP cubierto
+        if (universities > 0) educationScore += 2    // Universidad cubierta
+        if (kindergartens > 0 && schools > 0 && universities > 0) educationScore += 1 // Bonus por recorrido completo
+
+        metrics.educacion.value = Math.min(10, educationScore)
+        metrics.educacion.available = true
 
       // Transporte: contar estaciones de metro, bus, tren (5+ = 10/10)
       const transport = overpass.elements.filter((el: any) =>
