@@ -182,6 +182,20 @@ export default function ConsultaZona() {
   const getBestLocationForMetric = (metricKey: string) => {
     if (results.length === 0) return null
 
+    // Get all values for this metric
+    const values = results.map((location, index) => ({
+      index,
+      value: location.metrics[metricKey]?.value,
+      available: location.metrics[metricKey]?.available !== false
+    })).filter(v => v.available && v.value !== undefined)
+
+    if (values.length === 0) return null
+
+    // Check if all values are the same (empate)
+    const allSame = values.every(v => v.value === values[0].value)
+    if (allSame) return null // Empate, no hay ganador
+
+    // Find best value
     let bestIndex = 0
     let bestValue = -Infinity
 
@@ -210,28 +224,55 @@ export default function ConsultaZona() {
 
     if (metricsInCategory.length === 0) return 0
 
-    const totalScore = metricsInCategory.reduce((sum, [_, metric]) => {
+    // Only count metrics where there are differences across locations
+    const metricsWithDifferences = metricsInCategory.filter(([metricKey, _]) => {
+      const values = results.map(loc => loc.metrics[metricKey]?.value).filter(v => v !== undefined)
+      const allSame = values.length > 0 && values.every(v => v === values[0])
+      return !allSame // Include only if there are differences
+    })
+
+    if (metricsWithDifferences.length === 0) return 0
+
+    const totalScore = metricsWithDifferences.reduce((sum, [_, metric]) => {
       if (metric.max) {
         return sum + (metric.value / metric.max) * 100
       }
       return sum
     }, 0)
 
-    return totalScore / metricsInCategory.length
+    return totalScore / metricsWithDifferences.length
   }
 
   const getBestLocationByCategory = () => {
     if (results.length === 0) return {}
 
     const categories = ['Básicas', 'Servicios', 'Calidad de vida', 'Infraestructura', 'Movilidad', 'Familia', 'Zona', 'Ambiente']
-    const winners: { [key: string]: number } = {}
+    const winners: { [key: string]: number | null } = {}
 
     categories.forEach(category => {
+      const scores = results.map((location, index) => ({
+        index,
+        score: getCategoryScore(location, category)
+      }))
+
+      // Check if all scores are 0 or the same (empate)
+      const allScoresZero = scores.every(s => s.score === 0)
+      if (allScoresZero) {
+        winners[category] = null // No hay diferencias, empate
+        return
+      }
+
+      const allScoresSame = scores.every(s => s.score === scores[0].score)
+      if (allScoresSame) {
+        winners[category] = null // Empate
+        return
+      }
+
+      // Find best score
       let bestIndex = 0
       let bestScore = -Infinity
 
-      results.forEach((location, index) => {
-        const score = getCategoryScore(location, category)
+      scores.forEach(({ index, score }) => {
         if (score > bestScore) {
           bestScore = score
           bestIndex = index
@@ -248,11 +289,27 @@ export default function ConsultaZona() {
     if (results.length === 0) return null
 
     const categories = ['Básicas', 'Servicios', 'Calidad de vida', 'Infraestructura', 'Movilidad', 'Familia', 'Zona', 'Ambiente']
+
+    // Calculate scores for each location
+    const locationScores = results.map((location, index) => {
+      const categoryScores = categories.map(cat => getCategoryScore(location, cat))
+      const validScores = categoryScores.filter(s => s > 0)
+      const avgScore = validScores.length > 0 ? validScores.reduce((a, b) => a + b, 0) / validScores.length : 0
+      return { index, avgScore }
+    })
+
+    // Check if all scores are 0 or the same (empate general)
+    const allScoresZero = locationScores.every(ls => ls.avgScore === 0)
+    if (allScoresZero) return null
+
+    const allScoresSame = locationScores.every(ls => ls.avgScore === locationScores[0].avgScore)
+    if (allScoresSame) return null // Empate general
+
+    // Find best
     let bestIndex = 0
     let bestAvgScore = -Infinity
 
-    results.forEach((location, index) => {
-      const avgScore = categories.reduce((sum, cat) => sum + getCategoryScore(location, cat), 0) / categories.length
+    locationScores.forEach(({ index, avgScore }) => {
       if (avgScore > bestAvgScore) {
         bestAvgScore = avgScore
         bestIndex = index
@@ -400,26 +457,52 @@ export default function ConsultaZona() {
       {results.length > 0 && (
         <>
           {/* Overall Winner */}
-          {results.length > 1 && (
-            <Card className="max-w-6xl mx-auto bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800">
-              <CardHeader>
-                <CardTitle className="font-serif text-xl flex items-center gap-2">
-                  <Trophy className="w-6 h-6 text-yellow-600" />
-                  Ganador General
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-2">
-                  <p className="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
-                    {getShortAddress(results[getOverallBest() || 0].address)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Mejor puntuación promedio en todas las categorías
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {results.length > 1 && (() => {
+            const overallBest = getOverallBest()
+            return (
+              <Card className={`max-w-6xl mx-auto ${
+                overallBest !== null
+                  ? 'bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/20 dark:to-amber-950/20 border-yellow-200 dark:border-yellow-800'
+                  : 'bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-950/20 dark:to-slate-950/20 border-gray-200 dark:border-gray-800'
+              }`}>
+                <CardHeader>
+                  <CardTitle className="font-serif text-xl flex items-center gap-2">
+                    {overallBest !== null ? (
+                      <>
+                        <Trophy className="w-6 h-6 text-yellow-600" />
+                        Ganador General
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-2xl">🤝</span>
+                        Resultado General
+                      </>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center space-y-2">
+                    <p className={`text-2xl font-semibold ${
+                      overallBest !== null
+                        ? 'text-yellow-900 dark:text-yellow-100'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}>
+                      {overallBest !== null
+                        ? getShortAddress(results[overallBest].address)
+                        : 'Empate'
+                      }
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {overallBest !== null
+                        ? 'Mejor puntuación promedio en todas las categorías'
+                        : 'Todas las direcciones tienen puntuaciones similares'
+                      }
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })()}
 
           {/* Category Winners */}
           {results.length > 1 && (
@@ -430,11 +513,18 @@ export default function ConsultaZona() {
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {Object.entries(getBestLocationByCategory()).map(([category, winnerIndex]) => (
-                    <div key={category} className="bg-muted/50 p-4 rounded-lg text-center space-y-2">
+                    <div key={category} className={`p-4 rounded-lg text-center space-y-2 ${
+                      winnerIndex !== null
+                        ? 'bg-muted/50'
+                        : 'bg-gray-100 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700'
+                    }`}>
                       <div className="text-2xl">{getCategoryIcon(category)}</div>
                       <div className="font-medium text-sm">{category}</div>
                       <div className="text-xs text-muted-foreground line-clamp-2">
-                        {getShortAddress(results[winnerIndex].address)}
+                        {winnerIndex !== null
+                          ? getShortAddress(results[winnerIndex].address)
+                          : '🤝 Empate'
+                        }
                       </div>
                     </div>
                   ))}
