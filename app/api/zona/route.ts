@@ -263,11 +263,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Procesar datos de Overpass (OpenStreetMap)
-    if (overpassData.status === 'fulfilled' && overpassData.value) {
-      const overpass = overpassData.value
+    if (overpassData.status === 'fulfilled' && overpassData.value && overpassData.value.elements) {
+      try {
+        const overpass = overpassData.value
 
-      // Educación: contar escuelas cercanas
-      const schools = overpass.elements.filter((el: any) =>
+        // Educación: contar escuelas cercanas
+        const schools = overpass.elements.filter((el: any) =>
         el.tags?.amenity === 'school' || el.tags?.amenity === 'university' || el.tags?.amenity === 'kindergarten'
       ).length
       metrics.educacion.value = Math.min(100, schools * 15)
@@ -460,25 +461,27 @@ export async function GET(request: NextRequest) {
       ).length
       metrics.coworking.value = Math.min(100, coworking * 15)
       metrics.coworking.available = true
-    }
-
-    // Procesar datos de Catastro
-    if (catastroData.status === 'fulfilled' && catastroData.value) {
-      // Si tenemos datos de catastro, podríamos estimar renta por tipo de construcción
-      metrics.renta.available = false // Catastro no da renta directamente
+      } catch (error) {
+        console.warn('Error processing Overpass data:', error instanceof Error ? error.message : 'Unknown error')
+      }
     }
 
     // Estimar población basado en densidad de edificios residenciales
-    if (overpassData.status === 'fulfilled' && overpassData.value) {
+    if (overpassData.status === 'fulfilled' && overpassData.value && overpassData.value.elements) {
+      try {
       const buildings = overpassData.value.elements.filter((el: any) =>
         el.tags?.building === 'residential' || el.tags?.building === 'apartments' || el.tags?.building === 'house'
       ).length
       metrics.poblacion.value = Math.round(buildings * 25) // Estimación: 25 personas por edificio
       metrics.poblacion.available = true
+      } catch (error) {
+        console.warn('Error calculating population:', error instanceof Error ? error.message : 'Unknown error')
+      }
     }
 
     // Calcular seguridad basado en servicios de emergencia y vigilancia
-    if (overpassData.status === 'fulfilled' && overpassData.value) {
+    if (overpassData.status === 'fulfilled' && overpassData.value && overpassData.value.elements) {
+      try {
       const police = overpassData.value.elements.filter((el: any) =>
         el.tags?.amenity === 'police'
       ).length
@@ -492,6 +495,9 @@ export async function GET(request: NextRequest) {
       const safetyScore = Math.min(100, (police * 25 + hospitals * 15 + fireStations * 20 + 30))
       metrics.criminalidad.value = safetyScore
       metrics.criminalidad.available = true
+      } catch (error) {
+        console.warn('Error calculating safety score:', error instanceof Error ? error.message : 'Unknown error')
+      }
     }
 
     // Calcular distancia al centro (Madrid: Puerta del Sol, Barcelona: Plaza Catalunya)
@@ -519,31 +525,43 @@ export async function GET(request: NextRequest) {
 
     // Procesar datos del clima (Open-Meteo)
     if (weatherData.status === 'fulfilled' && weatherData.value) {
-      const weather = weatherData.value
-      if (weather.current_weather) {
-        metrics.temperatura.value = Math.round(weather.current_weather.temperature * 10) / 10
-        metrics.temperatura.available = true
+      try {
+        const weather = weatherData.value
+        if (weather.current_weather) {
+          metrics.temperatura.value = Math.round(weather.current_weather.temperature * 10) / 10
+          metrics.temperatura.available = true
+        }
+      } catch (error) {
+        console.warn('Error processing weather data:', error instanceof Error ? error.message : 'Unknown error')
       }
     }
 
     // Procesar datos de sol (Sunrise-Sunset)
     if (sunData.status === 'fulfilled' && sunData.value) {
-      const sun = sunData.value
-      if (sun.results) {
-        const sunrise = new Date(sun.results.sunrise)
-        const sunset = new Date(sun.results.sunset)
-        const hours = (sunset.getTime() - sunrise.getTime()) / (1000 * 60 * 60)
-        metrics.horasSol.value = Math.round(hours * 10) / 10
-        metrics.horasSol.available = true
+      try {
+        const sun = sunData.value
+        if (sun.results) {
+          const sunrise = new Date(sun.results.sunrise)
+          const sunset = new Date(sun.results.sunset)
+          const hours = (sunset.getTime() - sunrise.getTime()) / (1000 * 60 * 60)
+          metrics.horasSol.value = Math.round(hours * 10) / 10
+          metrics.horasSol.available = true
+        }
+      } catch (error) {
+        console.warn('Error processing sun data:', error instanceof Error ? error.message : 'Unknown error')
       }
     }
 
     // Procesar datos de elevación
     if (elevationData.status === 'fulfilled' && elevationData.value) {
-      const elevation = elevationData.value
-      if (elevation.results && elevation.results.length > 0) {
-        metrics.altitud.value = Math.round(elevation.results[0].elevation)
-        metrics.altitud.available = true
+      try {
+        const elevation = elevationData.value
+        if (elevation.results && elevation.results.length > 0) {
+          metrics.altitud.value = Math.round(elevation.results[0].elevation)
+          metrics.altitud.available = true
+        }
+      } catch (error) {
+        console.warn('Error processing elevation data:', error instanceof Error ? error.message : 'Unknown error')
       }
     }
 
