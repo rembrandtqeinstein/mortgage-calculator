@@ -33,90 +33,60 @@ export async function GET(request: NextRequest) {
 
 async function fetchYahooFinanceDetails(symbol: string) {
   try {
-    // Get quote and summary data
-    const [quoteResponse, summaryResponse] = await Promise.allSettled([
-      fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Accept': 'application/json'
-        },
-        signal: AbortSignal.timeout(8000)
-      }),
-      fetch(`https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=summaryDetail,defaultKeyStatistics,financialData`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Accept': 'application/json'
-        },
-        signal: AbortSignal.timeout(8000)
-      })
-    ])
+    // Use the quote endpoint which is more reliable and has all data in one call
+    const quoteUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbol}&fields=symbol,shortName,longName,regularMarketPrice,regularMarketChange,regularMarketChangePercent,currency,marketCap,trailingPE,epsTrailingTwelveMonths,dividendYield,beta,fiftyTwoWeekHigh,fiftyTwoWeekLow,regularMarketVolume,averageVolume,marketState,quoteType`
 
-    let currentPrice = 0
-    let change = 0
-    let changePercent = 0
-    let currency = 'USD'
-    let marketState = 'REGULAR'
-    let name = symbol
+    const response = await fetch(quoteUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'application/json',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      signal: AbortSignal.timeout(10000)
+    })
 
-    // Process quote data
-    if (quoteResponse.status === 'fulfilled' && quoteResponse.value.ok) {
-      const quoteData = await quoteResponse.value.json()
-      if (quoteData.chart?.result?.[0]) {
-        const result = quoteData.chart.result[0]
-        const meta = result.meta
-        currentPrice = meta.regularMarketPrice || meta.previousClose || 0
-        const previousClose = meta.chartPreviousClose || meta.previousClose || currentPrice
-        change = currentPrice - previousClose
-        changePercent = previousClose !== 0 ? (change / previousClose) * 100 : 0
-        currency = meta.currency || 'USD'
-        marketState = meta.marketState || 'REGULAR'
-        name = meta.longName || meta.shortName || symbol
-      }
+    if (!response.ok) {
+      console.warn(`Yahoo Finance quote API returned ${response.status} for ${symbol}`)
+      return null
     }
 
-    // Default values
-    let marketCap = 0
-    let peRatio = 0
-    let eps = 0
-    let dividendYield = 0
-    let beta = 0
-    let fiftyTwoWeekHigh = 0
-    let fiftyTwoWeekLow = 0
-    let volume = 0
-    let avgVolume = 0
+    const data = await response.json()
 
-    // Process summary data
-    if (summaryResponse.status === 'fulfilled' && summaryResponse.value.ok) {
-      const summaryData = await summaryResponse.value.json()
-      const result = summaryData.quoteSummary?.result?.[0]
-
-      if (result) {
-        const summary = result.summaryDetail
-        const keyStats = result.defaultKeyStatistics
-        const financial = result.financialData
-
-        if (summary) {
-          marketCap = summary.marketCap?.raw || 0
-          dividendYield = (summary.dividendYield?.raw || 0) * 100
-          fiftyTwoWeekHigh = summary.fiftyTwoWeekHigh?.raw || 0
-          fiftyTwoWeekLow = summary.fiftyTwoWeekLow?.raw || 0
-          volume = summary.volume?.raw || 0
-          avgVolume = summary.averageVolume?.raw || 0
-          beta = summary.beta?.raw || 0
-        }
-
-        if (keyStats) {
-          beta = beta || keyStats.beta?.raw || 0
-        }
-
-        if (financial) {
-          peRatio = financial.currentPrice?.raw && financial.trailingEps?.raw
-            ? financial.currentPrice.raw / financial.trailingEps.raw
-            : 0
-          eps = financial.trailingEps?.raw || 0
-        }
-      }
+    if (!data.quoteResponse?.result?.[0]) {
+      console.warn(`No quote data found for ${symbol}`)
+      return null
     }
+
+    const quote = data.quoteResponse.result[0]
+
+    // Extract all data with proper fallbacks
+    const currentPrice = quote.regularMarketPrice || 0
+    const change = quote.regularMarketChange || 0
+    const changePercent = quote.regularMarketChangePercent || 0
+    const currency = quote.currency || 'USD'
+    const name = quote.longName || quote.shortName || symbol
+    const marketState = quote.marketState || 'REGULAR'
+
+    // Financial metrics
+    const marketCap = quote.marketCap || 0
+    const peRatio = quote.trailingPE || 0
+    const eps = quote.epsTrailingTwelveMonths || 0
+    const dividendYield = (quote.dividendYield || 0) * 100 // Convert to percentage
+    const beta = quote.beta || 0
+    const fiftyTwoWeekHigh = quote.fiftyTwoWeekHigh || 0
+    const fiftyTwoWeekLow = quote.fiftyTwoWeekLow || 0
+    const volume = quote.regularMarketVolume || 0
+    const avgVolume = quote.averageDailyVolume3Month || quote.averageVolume || 0
+
+    console.log(`Stock details for ${symbol}:`, {
+      symbol,
+      name,
+      price: currentPrice,
+      marketCap,
+      peRatio,
+      eps,
+      volume
+    })
 
     return {
       symbol,
@@ -137,7 +107,7 @@ async function fetchYahooFinanceDetails(symbol: string) {
       marketState
     }
   } catch (error) {
-    console.warn(`Failed to fetch details for ${symbol}:`, error instanceof Error ? error.message : 'Unknown error')
+    console.error(`Failed to fetch details for ${symbol}:`, error instanceof Error ? error.message : 'Unknown error')
     return null
   }
 }
