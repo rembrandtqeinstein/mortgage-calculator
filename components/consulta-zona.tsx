@@ -6,19 +6,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, MapPin, AlertCircle } from "lucide-react"
 
+interface Metric {
+  value: number
+  max: number | null
+  description: string
+  unit?: string
+  source?: string
+  available?: boolean
+  category?: string
+}
+
 interface LocationData {
   address: string
   lat: number
   lng: number
   metrics: {
-    [key: string]: {
-      value: number
-      max: number | null
-      description: string
-      unit?: string
-      source?: string
-      available?: boolean
-    }
+    [key: string]: Metric
   }
 }
 
@@ -100,14 +103,38 @@ export default function ConsultaZona() {
 
   const getMetricName = (key: string) => {
     const names: { [key: string]: string } = {
+      // Básicas
       criminalidad: 'Seguridad',
       renta: 'Renta Media',
       poblacion: 'Población',
+      // Servicios
       educacion: 'Educación',
       transporte: 'Transporte',
-      servicios: 'Servicios'
+      servicios: 'Servicios Generales',
+      salud: 'Salud',
+      // Calidad de vida
+      espaciosVerdes: 'Espacios Verdes',
+      ocio: 'Ocio y Restauración',
+      cultura: 'Cultura',
+      deporte: 'Deporte',
+      // Infraestructura
+      aparcamiento: 'Aparcamiento',
+      supermercados: 'Supermercados',
+      bancos: 'Bancos',
+      cargaEV: 'Carga EV',
+      distanciaCentro: 'Distancia al Centro'
     }
     return names[key] || key.charAt(0).toUpperCase() + key.slice(1)
+  }
+
+  const getCategoryIcon = (category: string) => {
+    const icons: { [key: string]: string } = {
+      'Básicas': '📊',
+      'Servicios': '🏪',
+      'Calidad de vida': '🌟',
+      'Infraestructura': '🏗️'
+    }
+    return icons[category] || '📍'
   }
 
   return (
@@ -219,43 +246,60 @@ export default function ConsultaZona() {
             </CardContent>
           </Card>
 
-          {/* Metrics grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(results.metrics).map(([key, metric]) => (
-              <Card key={key} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-5 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {getMetricName(key)}
-                    </div>
-                    {metric.available ? (
-                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
-                        Real
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded">
-                        Estimado
-                      </span>
-                    )}
-                  </div>
-                  <div className={`text-3xl font-bold ${getScoreClass(metric.value, metric.max)}`}>
-                    {metric.unit
-                      ? `${metric.value.toLocaleString()} ${metric.unit}`
-                      : `${metric.value}${metric.max ? '/' + metric.max : ''}`
-                    }
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {metric.description}
-                  </div>
-                  {metric.source && (
-                    <div className="text-xs text-muted-foreground/60">
-                      Fuente: {metric.source}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Metrics by category */}
+          {['Básicas', 'Servicios', 'Calidad de vida', 'Infraestructura'].map((category) => {
+            const categoryMetrics = Object.entries(results.metrics).filter(
+              ([_, metric]) => metric.category === category
+            )
+
+            if (categoryMetrics.length === 0) return null
+
+            return (
+              <div key={category} className="space-y-4">
+                <div className="flex items-center gap-2 pt-4">
+                  <span className="text-2xl">{getCategoryIcon(category)}</span>
+                  <h3 className="font-serif text-xl font-semibold">{category}</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {categoryMetrics.map(([key, metric]) => (
+                    <Card key={key} className="hover:shadow-lg transition-shadow">
+                      <CardContent className="p-5 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-medium text-muted-foreground">
+                            {getMetricName(key)}
+                          </div>
+                          {metric.available ? (
+                            <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
+                              Real
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded">
+                              Estimado
+                            </span>
+                          )}
+                        </div>
+                        <div className={`text-3xl font-bold ${getScoreClass(metric.value, metric.max)}`}>
+                          {metric.unit
+                            ? `${metric.value.toLocaleString()} ${metric.unit}`
+                            : `${metric.value}${metric.max ? '/' + metric.max : ''}`
+                          }
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {metric.description}
+                        </div>
+                        {metric.source && (
+                          <div className="text-xs text-muted-foreground/60">
+                            Fuente: {metric.source}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
 
           {/* Disclaimer */}
           <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
@@ -265,15 +309,15 @@ export default function ConsultaZona() {
                 <div className="space-y-2 text-sm text-blue-900 dark:text-blue-200">
                   <p className="font-medium">ℹ️ Acerca de los datos</p>
                   <p>
-                    Los datos se obtienen de fuentes públicas abiertas:
+                    Los datos se obtienen en tiempo real de fuentes públicas abiertas:
                   </p>
-                  <ul className="list-disc list-inside space-y-1 ml-2">
-                    <li><strong>Datos reales:</strong> Servicios, transporte y educación provienen de OpenStreetMap</li>
-                    <li><strong>Estimaciones:</strong> Población y seguridad se calculan basándose en datos geográficos</li>
-                    <li><strong>No disponible aún:</strong> Renta media (requiere integración con INE)</li>
+                  <ul className="list-disc list-inside space-y-1 ml-2 text-xs">
+                    <li><strong>Datos reales (OpenStreetMap):</strong> Educación, transporte, salud, servicios, supermercados, bancos, espacios verdes, ocio, cultura, deporte, aparcamiento y estaciones de carga EV</li>
+                    <li><strong>Estimaciones calculadas:</strong> Población (basada en edificios residenciales), seguridad (basada en servicios de emergencia) y distancia al centro</li>
+                    <li><strong>Pendiente:</strong> Renta media (requiere integración con INE)</li>
                   </ul>
                   <p className="text-xs mt-2 opacity-80">
-                    Los datos son orientativos y se actualizan según la información disponible en las bases de datos públicas.
+                    Radio de búsqueda: 500 metros. Los datos son orientativos y se actualizan según la información disponible en las bases de datos públicas.
                   </p>
                 </div>
               </div>
