@@ -258,7 +258,7 @@ export default function ComparadorCasas() {
           </div>
 
           {/* Individual results */}
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {resultados.map(({ casa, results }) => {
               const isBestTotal = mejorTotalPagado?.casa.id === casa.id
               const isBestInicial = mejorInversionInicial?.casa.id === casa.id
