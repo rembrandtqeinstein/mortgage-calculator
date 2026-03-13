@@ -254,79 +254,91 @@ export default function ComparadorCasas() {
       {/* Results */}
       {resultados && (
         <div className="flex flex-col gap-6">
-          {/* Summary cards - Costo Total */}
-          <div>
-            <h3 className="font-serif text-lg text-foreground mb-3">Costo Total</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {resultados.map(({ casa, results }) => {
-                const isBest = mejorTotalPagado?.casa.id === casa.id
-                return (
-                  <Card key={casa.id} className={isBest ? "border-primary/50 bg-primary/5" : "border-border"}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        {isBest && <Trophy className="w-4 h-4 text-primary" />}
-                        {casa.nombre || "Sin nombre"}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className={`text-2xl font-bold ${isBest ? "text-primary" : "text-foreground"}`}>
-                        {formatCurrency(results.totalPagado)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
+          {/* Summary cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Costo Total */}
+            <Card className="border-border bg-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-serif text-base text-foreground">Costo Total</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border border-border bg-background p-4">
+                  {resultados.map(({ casa, results }, index) => {
+                    const isBest = mejorTotalPagado?.casa.id === casa.id
+                    return (
+                      <div key={casa.id}>
+                        {index > 0 && <Separator className="bg-border my-2" />}
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm text-muted-foreground flex items-center gap-2">
+                            {isBest && <Trophy className="w-4 h-4 text-primary flex-shrink-0" />}
+                            {casa.nombre || "Sin nombre"}
+                          </span>
+                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-primary" : "text-foreground"}`}>
+                            {formatCurrency(results.totalPagado)}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Summary cards - Inversión Inicial */}
-          <div>
-            <h3 className="font-serif text-lg text-foreground mb-3">Inversión Inicial</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {resultados.map(({ casa, results }) => {
-                const isBest = mejorInversionInicial?.casa.id === casa.id
-                return (
-                  <Card key={casa.id} className={isBest ? "border-accent/50 bg-accent/5" : "border-border"}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        {isBest && <Trophy className="w-4 h-4 text-accent" />}
-                        {casa.nombre || "Sin nombre"}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className={`text-2xl font-bold ${isBest ? "text-accent" : "text-foreground"}`}>
-                        {formatCurrency(results.inversionInicial)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
+            {/* Inversión Inicial */}
+            <Card className="border-border bg-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-serif text-base text-foreground">Inversión Inicial</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border border-border bg-background p-4">
+                  {resultados.map(({ casa, results }, index) => {
+                    const isBest = mejorInversionInicial?.casa.id === casa.id
+                    return (
+                      <div key={casa.id}>
+                        {index > 0 && <Separator className="bg-border my-2" />}
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm text-muted-foreground flex items-center gap-2">
+                            {isBest && <Trophy className="w-4 h-4 text-accent flex-shrink-0" />}
+                            {casa.nombre || "Sin nombre"}
+                          </span>
+                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-accent" : "text-foreground"}`}>
+                            {formatCurrency(results.inversionInicial)}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Summary cards - Cuota Mensual */}
-          <div>
-            <h3 className="font-serif text-lg text-foreground mb-3">Cuota Mensual</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {resultados.map(({ casa, results }) => {
-                const isBest = mejorCuotaMensual?.casa.id === casa.id
-                return (
-                  <Card key={casa.id} className={isBest ? "border-secondary/50 bg-secondary/5" : "border-border"}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        {isBest && <Trophy className="w-4 h-4 text-secondary" />}
-                        {casa.nombre || "Sin nombre"}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className={`text-2xl font-bold ${isBest ? "text-secondary" : "text-foreground"}`}>
-                        {formatCurrency(results.cuotaTotalMensual)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
+            {/* Cuota Mensual */}
+            <Card className="border-border bg-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-serif text-base text-foreground">Cuota Mensual</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border border-border bg-background p-4">
+                  {resultados.map(({ casa, results }, index) => {
+                    const isBest = mejorCuotaMensual?.casa.id === casa.id
+                    return (
+                      <div key={casa.id}>
+                        {index > 0 && <Separator className="bg-border my-2" />}
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm text-muted-foreground flex items-center gap-2">
+                            {isBest && <Trophy className="w-4 h-4 text-secondary flex-shrink-0" />}
+                            {casa.nombre || "Sin nombre"}
+                          </span>
+                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-secondary" : "text-foreground"}`}>
+                            {formatCurrency(results.cuotaTotalMensual)}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Individual results */}
