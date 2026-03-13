@@ -115,10 +115,20 @@ export default function ComparadorCasas() {
     setResultados(nuevosResultados)
   }
 
-  // Find best options
+  // Find best options and calculate differences
   const mejorTotalPagado = resultados
     ? resultados.reduce((best, curr) => (curr.results.totalPagado < best.results.totalPagado ? curr : best))
     : null
+
+  const segundoTotalPagado = resultados && mejorTotalPagado && resultados.length > 1
+    ? resultados
+        .filter((r) => r.casa.id !== mejorTotalPagado.casa.id)
+        .reduce((best, curr) => (curr.results.totalPagado < best.results.totalPagado ? curr : best))
+    : null
+
+  const diferenciaTotalPagado = mejorTotalPagado && segundoTotalPagado
+    ? segundoTotalPagado.results.totalPagado - mejorTotalPagado.results.totalPagado
+    : 0
 
   const mejorInversionInicial = resultados
     ? resultados.reduce((best, curr) =>
@@ -126,11 +136,31 @@ export default function ComparadorCasas() {
       )
     : null
 
+  const segundoInversionInicial = resultados && mejorInversionInicial && resultados.length > 1
+    ? resultados
+        .filter((r) => r.casa.id !== mejorInversionInicial.casa.id)
+        .reduce((best, curr) => (curr.results.inversionInicial < best.results.inversionInicial ? curr : best))
+    : null
+
+  const diferenciaInversionInicial = mejorInversionInicial && segundoInversionInicial
+    ? segundoInversionInicial.results.inversionInicial - mejorInversionInicial.results.inversionInicial
+    : 0
+
   const mejorCuotaMensual = resultados
     ? resultados.reduce((best, curr) =>
         curr.results.cuotaTotalMensual < best.results.cuotaTotalMensual ? curr : best
       )
     : null
+
+  const segundoCuotaMensual = resultados && mejorCuotaMensual && resultados.length > 1
+    ? resultados
+        .filter((r) => r.casa.id !== mejorCuotaMensual.casa.id)
+        .reduce((best, curr) => (curr.results.cuotaTotalMensual < best.results.cuotaTotalMensual ? curr : best))
+    : null
+
+  const diferenciaCuotaMensual = mejorCuotaMensual && segundoCuotaMensual
+    ? segundoCuotaMensual.results.cuotaTotalMensual - mejorCuotaMensual.results.cuotaTotalMensual
+    : 0
 
   return (
     <div className="flex flex-col gap-8">
@@ -260,6 +290,11 @@ export default function ComparadorCasas() {
             <Card className="border-border bg-card">
               <CardHeader className="pb-3">
                 <CardTitle className="font-serif text-base text-foreground">Costo Total</CardTitle>
+                {diferenciaTotalPagado > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Diferencia: {formatCurrency(diferenciaTotalPagado)}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="rounded-lg border border-border bg-background p-4">
@@ -288,6 +323,11 @@ export default function ComparadorCasas() {
             <Card className="border-border bg-card">
               <CardHeader className="pb-3">
                 <CardTitle className="font-serif text-base text-foreground">Inversión Inicial</CardTitle>
+                {diferenciaInversionInicial > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Diferencia: {formatCurrency(diferenciaInversionInicial)}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="rounded-lg border border-border bg-background p-4">
@@ -316,6 +356,11 @@ export default function ComparadorCasas() {
             <Card className="border-border bg-card">
               <CardHeader className="pb-3">
                 <CardTitle className="font-serif text-base text-foreground">Cuota Mensual</CardTitle>
+                {diferenciaCuotaMensual > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Diferencia: {formatCurrency(diferenciaCuotaMensual)}
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="rounded-lg border border-border bg-background p-4">
@@ -326,10 +371,10 @@ export default function ComparadorCasas() {
                         {index > 0 && <Separator className="bg-border my-2" />}
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm text-muted-foreground flex items-center gap-2">
-                            {isBest && <Trophy className="w-4 h-4 text-secondary flex-shrink-0" />}
+                            {isBest && <Trophy className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
                             {casa.nombre || "Sin nombre"}
                           </span>
-                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-secondary" : "text-foreground"}`}>
+                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-emerald-600" : "text-foreground"}`}>
                             {formatCurrency(results.cuotaTotalMensual)}
                           </span>
                         </div>
@@ -377,7 +422,7 @@ export default function ComparadorCasas() {
                           </span>
                         )}
                         {isBestCuota && (
-                          <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">
+                          <span className="text-xs bg-emerald-600/10 text-emerald-600 px-2 py-1 rounded">
                             Mejor cuota mensual
                           </span>
                         )}
