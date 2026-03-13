@@ -338,10 +338,10 @@ export default function ComparadorCasas() {
                         {index > 0 && <Separator className="bg-border my-2" />}
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm text-muted-foreground flex items-center gap-2">
-                            {isBest && <Trophy className="w-4 h-4 text-accent flex-shrink-0" />}
+                            {isBest && <Trophy className="w-4 h-4 text-primary flex-shrink-0" />}
                             {casa.nombre || "Sin nombre"}
                           </span>
-                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-accent" : "text-foreground"}`}>
+                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-primary" : "text-foreground"}`}>
                             {formatCurrency(results.inversionInicial)}
                           </span>
                         </div>
@@ -371,10 +371,10 @@ export default function ComparadorCasas() {
                         {index > 0 && <Separator className="bg-border my-2" />}
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm text-muted-foreground flex items-center gap-2">
-                            {isBest && <Trophy className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+                            {isBest && <Trophy className="w-4 h-4 text-primary flex-shrink-0" />}
                             {casa.nombre || "Sin nombre"}
                           </span>
-                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-emerald-600" : "text-foreground"}`}>
+                          <span className={`text-sm font-semibold tabular-nums ${isBest ? "text-primary" : "text-foreground"}`}>
                             {formatCurrency(results.cuotaTotalMensual)}
                           </span>
                         </div>
@@ -417,12 +417,12 @@ export default function ComparadorCasas() {
                           </span>
                         )}
                         {isBestInicial && (
-                          <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded">
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                             Mejor inversión inicial
                           </span>
                         )}
                         {isBestCuota && (
-                          <span className="text-xs bg-emerald-600/10 text-emerald-600 px-2 py-1 rounded">
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                             Mejor cuota mensual
                           </span>
                         )}
