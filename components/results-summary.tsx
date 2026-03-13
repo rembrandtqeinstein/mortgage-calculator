@@ -78,18 +78,12 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
           <DetailRow label="Comision agencia" value={formatCurrency(results.comision)} />
           <Separator className="bg-border" />
           <DetailRow label="Costos de Compra" value={formatCurrency(results.gastos)} />
-          {results.capitalObra > 0 && (
+          {results.costoObra > 0 && (
             <>
               <Separator className="bg-border" />
               <DetailRow
-                label="Aporte obra (no financiado)"
-                value={formatCurrency(
-                  results.capitalObra > 0
-                    ? (results.totalPagadoObra > 0
-                      ? results.inversionInicial - results.entrada - results.comision - results.gastos
-                      : 0)
-                    : 0
-                )}
+                label={results.capitalObra > 0 ? "Aporte obra (no financiado)" : "Costo obra"}
+                value={formatCurrency(results.costoObra - results.capitalObra)}
               />
             </>
           )}

@@ -35,6 +35,7 @@ export interface MortgageResults {
   totalPagadoHipoteca: number
 
   // Obra
+  costoObra: number
   capitalObra: number
   cuotaMensualObra: number
   interesesTotalesObra: number

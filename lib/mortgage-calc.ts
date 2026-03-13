@@ -75,7 +75,7 @@ export function calcularHipoteca(inputs: MortgageInputs): MortgageResults {
   // Totales
   const cuotaTotalMensual = cuotaMensualHipoteca + cuotaMensualObra + costosAdicionales
   const interesesTotales = interesesTotalesHipoteca + interesesTotalesObra
-  const totalPagado = totalPagadoHipoteca + totalPagadoObra
+  const totalPagado = totalPagadoHipoteca + totalPagadoObra + (costoObra - capitalObra)
 
   // Inversion inicial
   const entrada = precioInmueble - capitalHipoteca
@@ -112,6 +112,7 @@ export function calcularHipoteca(inputs: MortgageInputs): MortgageResults {
     cuotaMensualHipoteca,
     interesesTotalesHipoteca,
     totalPagadoHipoteca,
+    costoObra,
     capitalObra,
     cuotaMensualObra,
     interesesTotalesObra,
