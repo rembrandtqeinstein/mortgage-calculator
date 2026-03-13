@@ -1,0 +1,412 @@
+"use client"
+
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { InputField } from "@/components/input-field"
+import ResultsSummary from "@/components/results-summary"
+import DecorativeBorder from "@/components/decorative-border"
+import { calcularHipoteca, formatCurrency } from "@/lib/mortgage-calc"
+import type { MortgageInputs, MortgageResults } from "@/lib/mortgage-types"
+import { DEFAULT_INPUTS } from "@/lib/mortgage-types"
+import { Trophy, Plus, X, Home, Landmark, Hammer } from "lucide-react"
+
+interface Casa {
+  id: string
+  nombre: string
+  inputs: MortgageInputs
+}
+
+interface CasaResultado {
+  casa: Casa
+  results: MortgageResults
+}
+
+const DEFAULT_CASA: Omit<Casa, "id"> = {
+  nombre: "",
+  inputs: { ...DEFAULT_INPUTS },
+}
+
+export default function ComparadorCasas() {
+  const [casas, setCasas] = useState<Casa[]>([{ id: "1", ...DEFAULT_CASA }])
+  const [resultados, setResultados] = useState<CasaResultado[] | null>(null)
+
+  const addCasa = () => {
+    if (casas.length < 3) {
+      setCasas((prev) => [...prev, { id: Date.now().toString(), ...DEFAULT_CASA }])
+    }
+  }
+
+  const removeCasa = (id: string) => {
+    if (casas.length > 1) {
+      setCasas((prev) => prev.filter((c) => c.id !== id))
+      setResultados(null)
+    }
+  }
+
+  const updateCasaNombre = (id: string, nombre: string) => {
+    setCasas((prev) => prev.map((c) => (c.id === id ? { ...c, nombre } : c)))
+  }
+
+  const updateCasaInputs = (id: string, inputs: MortgageInputs) => {
+    setCasas((prev) => prev.map((c) => (c.id === id ? { ...c, inputs } : c)))
+    setResultados(null)
+  }
+
+  const comparar = () => {
+    const nuevosResultados: CasaResultado[] = casas.map((casa) => ({
+      casa,
+      results: calcularHipoteca(casa.inputs),
+    }))
+    setResultados(nuevosResultados)
+  }
+
+  // Find best options
+  const mejorTotalPagado = resultados
+    ? resultados.reduce((best, curr) => (curr.results.totalPagado < best.results.totalPagado ? curr : best))
+    : null
+
+  const mejorInversionInicial = resultados
+    ? resultados.reduce((best, curr) =>
+        curr.results.inversionInicial < best.results.inversionInicial ? curr : best
+      )
+    : null
+
+  const mejorCuotaMensual = resultados
+    ? resultados.reduce((best, curr) =>
+        curr.results.cuotaTotalMensual < best.results.cuotaTotalMensual ? curr : best
+      )
+    : null
+
+  return (
+    <div className="flex flex-col gap-8">
+      {/* Casas */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-serif text-xl text-foreground">Casas a comparar</h3>
+          {casas.length < 3 && (
+            <Button onClick={addCasa} variant="outline" size="sm" className="gap-2">
+              <Plus className="w-4 h-4" />
+              Agregar casa
+            </Button>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {casas.map((casa) => (
+            <Card key={casa.id} className="relative border-border bg-card shadow-sm overflow-hidden">
+              <DecorativeBorder />
+              {casas.length > 1 && (
+                <button
+                  onClick={() => removeCasa(casa.id)}
+                  className="absolute top-3 right-3 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-muted hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                  aria-label="Eliminar casa"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <CardHeader className="relative pb-4">
+                <div className="flex flex-col gap-2 pr-8">
+                  <Label htmlFor={`casa-nombre-${casa.id}`} className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Nombre de la propiedad
+                  </Label>
+                  <Input
+                    id={`casa-nombre-${casa.id}`}
+                    type="text"
+                    value={casa.nombre}
+                    onChange={(e) => updateCasaNombre(casa.id, e.target.value)}
+                    placeholder="Ej: Casa Chamberí"
+                    className="bg-background border-border h-11 text-foreground font-medium focus-visible:ring-accent"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="relative">
+                <CasaForm casaId={casa.id} inputs={casa.inputs} onChange={(inputs) => updateCasaInputs(casa.id, inputs)} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Compare button */}
+      <div className="flex justify-center">
+        <Button
+          onClick={comparar}
+          size="lg"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 px-10 font-semibold"
+        >
+          Comparar casas
+        </Button>
+      </div>
+
+      {/* Results */}
+      {resultados && (
+        <div className="flex flex-col gap-6">
+          {/* Summary cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Mejor total pagado */}
+            {mejorTotalPagado && (
+              <Card className="border-primary/50 bg-primary/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-primary" />
+                    Menor costo total
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg font-bold text-foreground mb-1">
+                    {mejorTotalPagado.casa.nombre || "Sin nombre"}
+                  </p>
+                  <p className="text-2xl font-bold text-primary">
+                    {formatCurrency(mejorTotalPagado.results.totalPagado)}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Mejor inversión inicial */}
+            {mejorInversionInicial && (
+              <Card className="border-accent/50 bg-accent/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-accent" />
+                    Menor inversión inicial
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg font-bold text-foreground mb-1">
+                    {mejorInversionInicial.casa.nombre || "Sin nombre"}
+                  </p>
+                  <p className="text-2xl font-bold text-accent">
+                    {formatCurrency(mejorInversionInicial.results.inversionInicial)}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Mejor cuota mensual */}
+            {mejorCuotaMensual && (
+              <Card className="border-secondary/50 bg-secondary/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-secondary" />
+                    Menor cuota mensual
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg font-bold text-foreground mb-1">
+                    {mejorCuotaMensual.casa.nombre || "Sin nombre"}
+                  </p>
+                  <p className="text-2xl font-bold text-secondary">
+                    {formatCurrency(mejorCuotaMensual.results.cuotaTotalMensual)}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Individual results */}
+          <div className="grid grid-cols-1 gap-6">
+            {resultados.map(({ casa, results }) => {
+              const isBestTotal = mejorTotalPagado?.casa.id === casa.id
+              const isBestInicial = mejorInversionInicial?.casa.id === casa.id
+              const isBestCuota = mejorCuotaMensual?.casa.id === casa.id
+              const hasTrophy = isBestTotal || isBestInicial || isBestCuota
+
+              return (
+                <Card
+                  key={casa.id}
+                  className={`relative border-border bg-card shadow-sm overflow-hidden ${
+                    hasTrophy ? "ring-2 ring-primary" : ""
+                  }`}
+                >
+                  <DecorativeBorder />
+                  <CardHeader className="relative pb-4">
+                    <div className="flex items-center gap-2">
+                      {hasTrophy && <Trophy className="w-5 h-5 text-primary flex-shrink-0" />}
+                      <CardTitle className="font-serif text-xl text-foreground">
+                        {casa.nombre || "Casa sin nombre"}
+                      </CardTitle>
+                    </div>
+                    {hasTrophy && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {isBestTotal && (
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                            Mejor costo total
+                          </span>
+                        )}
+                        {isBestInicial && (
+                          <span className="text-xs bg-accent/10 text-accent px-2 py-1 rounded">
+                            Mejor inversión inicial
+                          </span>
+                        )}
+                        {isBestCuota && (
+                          <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">
+                            Mejor cuota mensual
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </CardHeader>
+                  <Separator className="bg-border mx-6" />
+                  <CardContent className="relative pt-6">
+                    <ResultsSummary results={results} />
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Simplified form for casa comparison
+function CasaForm({ casaId, inputs, onChange }: { casaId: string; inputs: MortgageInputs; onChange: (inputs: MortgageInputs) => void }) {
+  const update = (field: keyof MortgageInputs, value: number) => {
+    onChange({ ...inputs, [field]: value })
+  }
+
+  const round3 = (num: number) => Math.round(num * 1000) / 1000
+
+  const updateComisionAgencia = (percentage: number) => {
+    const costoAgencia = Math.round(inputs.precioInmueble * (percentage / 100))
+    onChange({ ...inputs, comisionAgencia: round3(percentage), costoAgencia })
+  }
+
+  const updateGastosEscritura = (percentage: number) => {
+    const costosCompra = Math.round(inputs.precioInmueble * (percentage / 100))
+    onChange({ ...inputs, gastosEscritura: round3(percentage), costosCompra })
+  }
+
+  const updatePrecioInmueble = (precio: number) => {
+    const costoAgencia = Math.round(precio * (inputs.comisionAgencia / 100))
+    const costosCompra = Math.round(precio * (inputs.gastosEscritura / 100))
+    onChange({ ...inputs, precioInmueble: Math.round(precio), costoAgencia, costosCompra })
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Inmueble */}
+      <section>
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary">
+            <Home className="w-3.5 h-3.5 text-primary-foreground" />
+          </div>
+          <h4 className="font-serif text-base text-foreground">Inmueble</h4>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <InputField
+            id={`precio-${casaId}`}
+            label="Precio"
+            value={inputs.precioInmueble}
+            onChange={updatePrecioInmueble}
+            suffix="EUR"
+          />
+          <InputField
+            id={`financiado-${casaId}`}
+            label="% Financiado"
+            value={inputs.porcentajeFinanciado}
+            onChange={(v) => update("porcentajeFinanciado", v)}
+            suffix="%"
+          />
+          <InputField
+            id={`comision-${casaId}`}
+            label="Comisión agencia"
+            value={inputs.comisionAgencia}
+            onChange={updateComisionAgencia}
+            suffix="%"
+          />
+          <InputField
+            id={`escritura-${casaId}`}
+            label="Costos compra"
+            value={inputs.gastosEscritura}
+            onChange={updateGastosEscritura}
+            suffix="%"
+          />
+          <InputField
+            id={`adicionales-${casaId}`}
+            label="Costos adicionales/mes"
+            value={inputs.costosAdicionales}
+            onChange={(v) => update("costosAdicionales", v)}
+            suffix="EUR"
+          />
+        </div>
+      </section>
+
+      <Separator className="bg-border" />
+
+      {/* Hipoteca */}
+      <section>
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-accent">
+            <Landmark className="w-3.5 h-3.5 text-accent-foreground" />
+          </div>
+          <h4 className="font-serif text-base text-foreground">Hipoteca</h4>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <InputField
+            id={`anios-${casaId}`}
+            label="Plazo"
+            value={inputs.aniosHipoteca}
+            onChange={(v) => update("aniosHipoteca", v)}
+            suffix="años"
+          />
+          <InputField
+            id={`tasa-${casaId}`}
+            label="TIN"
+            value={inputs.tasaHipoteca}
+            onChange={(v) => update("tasaHipoteca", v)}
+            suffix="%"
+          />
+        </div>
+      </section>
+
+      <Separator className="bg-border" />
+
+      {/* Obra */}
+      <section>
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-secondary">
+            <Hammer className="w-3.5 h-3.5 text-secondary-foreground" />
+          </div>
+          <h4 className="font-serif text-base text-foreground">Obra (opcional)</h4>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <InputField
+            id={`costoObra-${casaId}`}
+            label="Costo obra"
+            value={inputs.costoObra}
+            onChange={(v) => update("costoObra", v)}
+            suffix="EUR"
+          />
+          <InputField
+            id={`financiadoObra-${casaId}`}
+            label="% Financiado"
+            value={inputs.porcentajeFinanciadoObra}
+            onChange={(v) => update("porcentajeFinanciadoObra", v)}
+            suffix="%"
+          />
+          <InputField
+            id={`tasaObra-${casaId}`}
+            label="TIN obra"
+            value={inputs.tasaObra}
+            onChange={(v) => update("tasaObra", v)}
+            suffix="%"
+          />
+          <InputField
+            id={`aniosObra-${casaId}`}
+            label="Plazo obra"
+            value={inputs.aniosObra}
+            onChange={(v) => update("aniosObra", v)}
+            suffix="años"
+          />
+        </div>
+      </section>
+    </div>
+  )
+}

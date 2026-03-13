@@ -10,6 +10,7 @@ import InvestmentChart from "@/components/investment-chart"
 import AmortizationTable from "@/components/amortization-table"
 import DecorativeBorder from "@/components/decorative-border"
 import ComparadorHipoteca from "@/components/comparador-hipoteca"
+import ComparadorCasas from "@/components/comparador-casas"
 import ConsultaZona from "@/components/consulta-zona"
 import InversionesMejorado from "@/components/inversiones-mejorado"
 import { calcularHipoteca } from "@/lib/mortgage-calc"
@@ -85,6 +86,12 @@ export default function Page() {
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-4 sm:px-6 py-3 font-serif text-sm sm:text-base hover:text-foreground transition-colors whitespace-nowrap"
               >
                 Calculador Hipoteca
+              </TabsTrigger>
+              <TabsTrigger
+                value="comparador-casas"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground px-4 sm:px-6 py-3 font-serif text-sm sm:text-base hover:text-foreground transition-colors whitespace-nowrap"
+              >
+                Comparar Casas
               </TabsTrigger>
               <TabsTrigger
                 value="comparador"
@@ -198,6 +205,11 @@ export default function Page() {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          {/* Comparador Casas tab */}
+          <TabsContent value="comparador-casas" className="mt-0 py-8 sm:py-12">
+            <ComparadorCasas />
           </TabsContent>
 
           {/* Comparador tab */}
