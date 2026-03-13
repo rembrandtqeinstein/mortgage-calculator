@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,7 +12,7 @@ import DecorativeBorder from "@/components/decorative-border"
 import { calcularHipoteca, formatCurrency } from "@/lib/mortgage-calc"
 import type { MortgageInputs, MortgageResults } from "@/lib/mortgage-types"
 import { DEFAULT_INPUTS } from "@/lib/mortgage-types"
-import { Trophy, Plus, X, Home, Landmark, Hammer } from "lucide-react"
+import { Trophy, Plus, X, Home, Landmark, Hammer, Check, RotateCcw } from "lucide-react"
 
 interface Casa {
   id: string
@@ -40,10 +40,46 @@ const DEFAULT_HIPOTECA: HipotecaConfig = {
   tasaHipoteca: 2,
 }
 
+const STORAGE_KEY = "comparador-casas"
+
 export default function ComparadorCasas() {
   const [casas, setCasas] = useState<Casa[]>([{ id: "1", ...DEFAULT_CASA }])
   const [hipotecaConfig, setHipotecaConfig] = useState<HipotecaConfig>(DEFAULT_HIPOTECA)
   const [resultados, setResultados] = useState<CasaResultado[] | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
+
+  // Load saved casas from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        if (parsed.casas && Array.isArray(parsed.casas) && parsed.casas.length > 0) {
+          setCasas(parsed.casas)
+        }
+        if (parsed.hipotecaConfig) {
+          setHipotecaConfig(parsed.hipotecaConfig)
+        }
+      }
+    } catch {}
+  }, [])
+
+  const guardar = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ casas, hipotecaConfig }))
+      setIsSaved(true)
+      setTimeout(() => setIsSaved(false), 2000)
+    } catch {}
+  }
+
+  const reiniciar = () => {
+    setCasas([{ id: Date.now().toString(), ...DEFAULT_CASA }])
+    setHipotecaConfig(DEFAULT_HIPOTECA)
+    setResultados(null)
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {}
+  }
 
   const addCasa = () => {
     if (casas.length < 3) {
@@ -180,8 +216,23 @@ export default function ComparadorCasas() {
         </div>
       </div>
 
-      {/* Compare button */}
-      <div className="flex justify-center">
+      {/* Action buttons */}
+      <div className="flex justify-center items-center gap-4">
+        <Button
+          onClick={guardar}
+          size="lg"
+          variant="outline"
+          className="px-8 font-semibold border-border gap-2"
+        >
+          {isSaved ? (
+            <>
+              <Check className="w-4 h-4 text-green-600" />
+              <span className="text-green-600">Guardado</span>
+            </>
+          ) : (
+            "Guardar"
+          )}
+        </Button>
         <Button
           onClick={comparar}
           size="lg"
@@ -189,72 +240,93 @@ export default function ComparadorCasas() {
         >
           Comparar casas
         </Button>
+        <Button
+          onClick={reiniciar}
+          size="lg"
+          variant="outline"
+          className="px-8 font-semibold border-border gap-2"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Reiniciar
+        </Button>
       </div>
 
       {/* Results */}
       {resultados && (
         <div className="flex flex-col gap-6">
-          {/* Summary cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Mejor total pagado */}
-            {mejorTotalPagado && (
-              <Card className="border-primary/50 bg-primary/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-primary" />
-                    Menor costo total
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-lg font-bold text-foreground mb-1">
-                    {mejorTotalPagado.casa.nombre || "Sin nombre"}
-                  </p>
-                  <p className="text-2xl font-bold text-primary">
-                    {formatCurrency(mejorTotalPagado.results.totalPagado)}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+          {/* Summary cards - Costo Total */}
+          <div>
+            <h3 className="font-serif text-lg text-foreground mb-3">Costo Total</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {resultados.map(({ casa, results }) => {
+                const isBest = mejorTotalPagado?.casa.id === casa.id
+                return (
+                  <Card key={casa.id} className={isBest ? "border-primary/50 bg-primary/5" : "border-border"}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        {isBest && <Trophy className="w-4 h-4 text-primary" />}
+                        {casa.nombre || "Sin nombre"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className={`text-2xl font-bold ${isBest ? "text-primary" : "text-foreground"}`}>
+                        {formatCurrency(results.totalPagado)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
 
-            {/* Mejor inversión inicial */}
-            {mejorInversionInicial && (
-              <Card className="border-accent/50 bg-accent/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-accent" />
-                    Menor inversión inicial
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-lg font-bold text-foreground mb-1">
-                    {mejorInversionInicial.casa.nombre || "Sin nombre"}
-                  </p>
-                  <p className="text-2xl font-bold text-accent">
-                    {formatCurrency(mejorInversionInicial.results.inversionInicial)}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+          {/* Summary cards - Inversión Inicial */}
+          <div>
+            <h3 className="font-serif text-lg text-foreground mb-3">Inversión Inicial</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {resultados.map(({ casa, results }) => {
+                const isBest = mejorInversionInicial?.casa.id === casa.id
+                return (
+                  <Card key={casa.id} className={isBest ? "border-accent/50 bg-accent/5" : "border-border"}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        {isBest && <Trophy className="w-4 h-4 text-accent" />}
+                        {casa.nombre || "Sin nombre"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className={`text-2xl font-bold ${isBest ? "text-accent" : "text-foreground"}`}>
+                        {formatCurrency(results.inversionInicial)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
 
-            {/* Mejor cuota mensual */}
-            {mejorCuotaMensual && (
-              <Card className="border-secondary/50 bg-secondary/5">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-secondary" />
-                    Menor cuota mensual
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-lg font-bold text-foreground mb-1">
-                    {mejorCuotaMensual.casa.nombre || "Sin nombre"}
-                  </p>
-                  <p className="text-2xl font-bold text-secondary">
-                    {formatCurrency(mejorCuotaMensual.results.cuotaTotalMensual)}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+          {/* Summary cards - Cuota Mensual */}
+          <div>
+            <h3 className="font-serif text-lg text-foreground mb-3">Cuota Mensual</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {resultados.map(({ casa, results }) => {
+                const isBest = mejorCuotaMensual?.casa.id === casa.id
+                return (
+                  <Card key={casa.id} className={isBest ? "border-secondary/50 bg-secondary/5" : "border-border"}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        {isBest && <Trophy className="w-4 h-4 text-secondary" />}
+                        {casa.nombre || "Sin nombre"}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className={`text-2xl font-bold ${isBest ? "text-secondary" : "text-foreground"}`}>
+                        {formatCurrency(results.cuotaTotalMensual)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
           </div>
 
           {/* Individual results */}
