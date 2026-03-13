@@ -25,13 +25,24 @@ interface CasaResultado {
   results: MortgageResults
 }
 
+interface HipotecaConfig {
+  aniosHipoteca: number
+  tasaHipoteca: number
+}
+
 const DEFAULT_CASA: Omit<Casa, "id"> = {
   nombre: "",
   inputs: { ...DEFAULT_INPUTS },
 }
 
+const DEFAULT_HIPOTECA: HipotecaConfig = {
+  aniosHipoteca: 30,
+  tasaHipoteca: 2,
+}
+
 export default function ComparadorCasas() {
   const [casas, setCasas] = useState<Casa[]>([{ id: "1", ...DEFAULT_CASA }])
+  const [hipotecaConfig, setHipotecaConfig] = useState<HipotecaConfig>(DEFAULT_HIPOTECA)
   const [resultados, setResultados] = useState<CasaResultado[] | null>(null)
 
   const addCasa = () => {
@@ -59,7 +70,11 @@ export default function ComparadorCasas() {
   const comparar = () => {
     const nuevosResultados: CasaResultado[] = casas.map((casa) => ({
       casa,
-      results: calcularHipoteca(casa.inputs),
+      results: calcularHipoteca({
+        ...casa.inputs,
+        aniosHipoteca: hipotecaConfig.aniosHipoteca,
+        tasaHipoteca: hipotecaConfig.tasaHipoteca,
+      }),
     }))
     setResultados(nuevosResultados)
   }
@@ -83,6 +98,40 @@ export default function ComparadorCasas() {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Hipoteca Configuration */}
+      <Card className="relative border-border bg-card shadow-sm overflow-hidden">
+        <DecorativeBorder />
+        <CardHeader className="relative pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent">
+              <Landmark className="w-4 h-4 text-accent-foreground" />
+            </div>
+            <CardTitle className="font-serif text-xl text-foreground">Configuración de Hipoteca</CardTitle>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Esta configuración se aplicará a todas las casas
+          </p>
+        </CardHeader>
+        <CardContent className="relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+            <InputField
+              id="hipoteca-anios"
+              label="Plazo"
+              value={hipotecaConfig.aniosHipoteca}
+              onChange={(v) => setHipotecaConfig({ ...hipotecaConfig, aniosHipoteca: v })}
+              suffix="años"
+            />
+            <InputField
+              id="hipoteca-tasa"
+              label="TIN (tasa anual)"
+              value={hipotecaConfig.tasaHipoteca}
+              onChange={(v) => setHipotecaConfig({ ...hipotecaConfig, tasaHipoteca: v })}
+              suffix="%"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Casas */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -95,7 +144,7 @@ export default function ComparadorCasas() {
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {casas.map((casa) => (
             <Card key={casa.id} className="relative border-border bg-card shadow-sm overflow-hidden">
               <DecorativeBorder />
@@ -278,9 +327,23 @@ function CasaForm({ casaId, inputs, onChange }: { casaId: string; inputs: Mortga
     onChange({ ...inputs, comisionAgencia: round3(percentage), costoAgencia })
   }
 
+  const updateCostoAgencia = (cost: number) => {
+    const comisionAgencia = inputs.precioInmueble > 100
+      ? round3((cost / inputs.precioInmueble) * 100)
+      : 0
+    onChange({ ...inputs, costoAgencia: Math.round(cost), comisionAgencia })
+  }
+
   const updateGastosEscritura = (percentage: number) => {
     const costosCompra = Math.round(inputs.precioInmueble * (percentage / 100))
     onChange({ ...inputs, gastosEscritura: round3(percentage), costosCompra })
+  }
+
+  const updateCostosCompra = (cost: number) => {
+    const gastosEscritura = inputs.precioInmueble > 100
+      ? round3((cost / inputs.precioInmueble) * 100)
+      : 0
+    onChange({ ...inputs, costosCompra: Math.round(cost), gastosEscritura })
   }
 
   const updatePrecioInmueble = (precio: number) => {
@@ -299,10 +362,10 @@ function CasaForm({ casaId, inputs, onChange }: { casaId: string; inputs: Mortga
           </div>
           <h4 className="font-serif text-base text-foreground">Inmueble</h4>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <InputField
             id={`precio-${casaId}`}
-            label="Precio"
+            label="Precio del inmueble"
             value={inputs.precioInmueble}
             onChange={updatePrecioInmueble}
             suffix="EUR"
@@ -314,54 +377,44 @@ function CasaForm({ casaId, inputs, onChange }: { casaId: string; inputs: Mortga
             onChange={(v) => update("porcentajeFinanciado", v)}
             suffix="%"
           />
-          <InputField
-            id={`comision-${casaId}`}
-            label="Comisión agencia"
-            value={inputs.comisionAgencia}
-            onChange={updateComisionAgencia}
-            suffix="%"
-          />
-          <InputField
-            id={`escritura-${casaId}`}
-            label="Costos compra"
-            value={inputs.gastosEscritura}
-            onChange={updateGastosEscritura}
-            suffix="%"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <InputField
+              id={`costoAgencia-${casaId}`}
+              label="Costo Agencia"
+              value={inputs.costoAgencia}
+              onChange={updateCostoAgencia}
+              suffix="EUR"
+            />
+            <InputField
+              id={`comision-${casaId}`}
+              label="Comisión Agencia"
+              value={inputs.comisionAgencia}
+              onChange={updateComisionAgencia}
+              suffix="%"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <InputField
+              id={`costosCompra-${casaId}`}
+              label="Costos de Compra ($)"
+              value={inputs.costosCompra}
+              onChange={updateCostosCompra}
+              suffix="EUR"
+            />
+            <InputField
+              id={`escritura-${casaId}`}
+              label="Costos de Compra (%)"
+              value={inputs.gastosEscritura}
+              onChange={updateGastosEscritura}
+              suffix="%"
+            />
+          </div>
           <InputField
             id={`adicionales-${casaId}`}
-            label="Costos adicionales/mes"
+            label="Costos adicionales / mes"
             value={inputs.costosAdicionales}
             onChange={(v) => update("costosAdicionales", v)}
             suffix="EUR"
-          />
-        </div>
-      </section>
-
-      <Separator className="bg-border" />
-
-      {/* Hipoteca */}
-      <section>
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-accent">
-            <Landmark className="w-3.5 h-3.5 text-accent-foreground" />
-          </div>
-          <h4 className="font-serif text-base text-foreground">Hipoteca</h4>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <InputField
-            id={`anios-${casaId}`}
-            label="Plazo"
-            value={inputs.aniosHipoteca}
-            onChange={(v) => update("aniosHipoteca", v)}
-            suffix="años"
-          />
-          <InputField
-            id={`tasa-${casaId}`}
-            label="TIN"
-            value={inputs.tasaHipoteca}
-            onChange={(v) => update("tasaHipoteca", v)}
-            suffix="%"
           />
         </div>
       </section>
@@ -376,17 +429,17 @@ function CasaForm({ casaId, inputs, onChange }: { casaId: string; inputs: Mortga
           </div>
           <h4 className="font-serif text-base text-foreground">Obra (opcional)</h4>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <InputField
             id={`costoObra-${casaId}`}
-            label="Costo obra"
+            label="Costo de obra"
             value={inputs.costoObra}
             onChange={(v) => update("costoObra", v)}
             suffix="EUR"
           />
           <InputField
             id={`financiadoObra-${casaId}`}
-            label="% Financiado"
+            label="% Financiado obra"
             value={inputs.porcentajeFinanciadoObra}
             onChange={(v) => update("porcentajeFinanciadoObra", v)}
             suffix="%"
